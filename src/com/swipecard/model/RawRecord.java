@@ -8,6 +8,8 @@ public class RawRecord {
 	private Date SwipeCardTime;
 	private String Record_Status;
 	private String swipeCardHostIp;
+	private String WorkshopNo;
+	private String LineNo;
 	
 	public String getId() {
 		return Id;
@@ -39,4 +41,17 @@ public class RawRecord {
 	public void setSwipeCardHostIp(String swipeCardHostIp) {
 		this.swipeCardHostIp = swipeCardHostIp;
 	}
+	public String getWorkshopNo() {
+		return WorkshopNo;
+	}
+	public void setWorkshopNo(String workshopNo) {
+		WorkshopNo = workshopNo;
+	}
+	public String getLineNo() {
+		return LineNo;
+	}
+	public void setLineNo(String lineNo) {
+		LineNo = lineNo;
+	}
+	
 }

@@ -125,7 +125,7 @@ public class JsonFileUtil {
 			if (!swipeCardRecordFile.exists()) {
 				System.out.println("本地log無刷卡記錄!");
 			} else {
-				InputStreamReader streamReader = new InputStreamReader(new FileInputStream(swipeCardRecordFile), "gbk");
+				InputStreamReader streamReader = new InputStreamReader(new FileInputStream(swipeCardRecordFile), "utf-8");
 				 brRread = new BufferedReader(streamReader);
 				String tempString = null;
 				while ((tempString = brRread.readLine()) != null) {

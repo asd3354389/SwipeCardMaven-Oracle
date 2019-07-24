@@ -50,7 +50,7 @@ import com.swipecard.model.Employee;
 import com.swipecard.model.LineNO;
 
 public class SwipeCardLogin extends JFrame {
-	private final static String CurrentVersion = "V20171113";
+	private final static String CurrentVersion = "V20190717";
 	private static Logger logger = Logger.getLogger(SwipeCardLogin.class);
 	static JsonFileUtil jsonFileUtil = new JsonFileUtil();
 	final  String defaultWorkshopNo = jsonFileUtil.getSaveWorkshopNo();

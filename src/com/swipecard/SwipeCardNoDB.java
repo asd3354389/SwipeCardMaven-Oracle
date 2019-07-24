@@ -57,7 +57,7 @@ import com.swipecard.util.PingDBIPUtil;
 import com.swipecard.util.SwipeCardJButton;
 
 public class SwipeCardNoDB extends JFrame {
-	private final static String CurrentVersion="V20180910";	
+	private final static String CurrentVersion="V20190717";	
 	private static Logger logger = Logger.getLogger(SwipeCardNoDB.class);
 	private String DEFAULT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	private String time;
@@ -277,7 +277,7 @@ public class SwipeCardNoDB extends JFrame {
 		tmr.scheduleAtFixedRate(new JLabelTimerTask(), new Date(), ONE_SECOND);
 
 	     final Timer checkDBLinktmr = new Timer();
-		checkDBLinktmr.scheduleAtFixedRate(new CheckDBLinkTimerTask(),5 * 60 * 1000, 5 * 60 * 1000);
+		checkDBLinktmr.scheduleAtFixedRate(new CheckDBLinkTimerTask(),5, 5);
 
 		butT1_5.addActionListener(new ActionListener() {
 
@@ -346,6 +346,10 @@ public class SwipeCardNoDB extends JFrame {
 				String swipeCardTime = FormatDateUtil.getStrTime();
 				//String selectWorkShopNo = comboBox1.getSelectedItem().toString();
 				String selectWorkShopNo = jtf1.getText();
+				String lineNo = (String) comboBox2.getSelectedItem();
+				if(lineNo.equals("不需要選擇線號")){
+					lineNo = "";
+				}
 				JSONObject swipeCardRecord = new JSONObject();
 
 				// 驗證是否為10位整數，是則繼續執行，否則提示
@@ -365,6 +369,7 @@ public class SwipeCardNoDB extends JFrame {
 						try {
 							swipeTimeLable.setText(swipeCardTime);
 							swipeCardRecord.put("WorkshopNo", selectWorkShopNo);
+							swipeCardRecord.put("lineNo", lineNo);
 							// String filePath = System.getProperty("user.dir");
 							String filePath = "D:/SwipeCard/logs/SwipeCardRecordLogs/";
 							String fileName = uuid + FormatDateUtil.getCurDate() + ".json";

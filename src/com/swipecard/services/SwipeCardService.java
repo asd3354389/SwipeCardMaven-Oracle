@@ -184,7 +184,7 @@ public class SwipeCardService {
 	}
 	
 	/*當員工刷卡時，立即記錄一筆刷卡資料至raw_record table中*/
-	public void addRawSwipeRecord(SqlSession session, Employee eif, String CardID,Date SwipeCardTime,String WorkshopNo,String Record_Status) {
+	public void addRawSwipeRecord(SqlSession session, Employee eif, String CardID,Date SwipeCardTime,String WorkshopNo,String Record_Status, String lineNo) {
 		String Id=null;
 		try {
 			if(eif!=null)
@@ -202,6 +202,8 @@ public class SwipeCardService {
 				swipeRecord.setSwipeCardTime(SwipeCardTime);
 				swipeRecord.setRecord_Status(Record_Status);
 				swipeRecord.setSwipeCardHostIp(swipeCardHostIp);
+				swipeRecord.setWorkshopNo(WorkshopNo);
+				swipeRecord.setLineNo(lineNo);
 				session.insert("addRawSwipeRecord", swipeRecord);
 				session.commit();
 			}

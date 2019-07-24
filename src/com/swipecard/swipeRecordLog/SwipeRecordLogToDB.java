@@ -80,18 +80,19 @@ public class SwipeRecordLogToDB {
 					File swipeCardRecordFile = swipeCardLogList[i];
 					JSONObject swipeCardRecordJson = jsonFileUtil.getSwipeCardRecordByJson(swipeCardRecordFile);
 					JSONArray swipeDataJsonArray;
-					String workshopNo = "", cardID = "", swipeCardTime = "";
+					String workshopNo = "", lineNo = "" ,cardID = "", swipeCardTime = "";
 					if (swipeCardRecordJson != null) {
 						workshopNo = swipeCardRecordJson.getString("WorkshopNo");
+						lineNo = swipeCardRecordJson.getString("lineNo");
 						swipeDataJsonArray = swipeCardRecordJson.getJSONArray("SwipeData");
 						if (swipeDataJsonArray.length() > 0) {
 							for (int j = 0; j < swipeDataJsonArray.length(); j++) {
 								JSONObject swipeCardData = swipeDataJsonArray.getJSONObject(j);
 								cardID = swipeCardData.getString("CardID");
 								swipeCardTime = swipeCardData.getString("swipeCardTime");
-								System.out.println("WorkshopNo:" + workshopNo + ",CardID:" + cardID + ",swipeCardTime:"
+								System.out.println("WorkshopNo:" + workshopNo + ",lineNo:" + lineNo + ",CardID:" + cardID + ",swipeCardTime:"
 										+ swipeCardTime);
-								swipeCardlogToDB(workshopNo, cardID, swipeCardTime);
+								swipeCardlogToDB(workshopNo,lineNo, cardID, swipeCardTime);
 								logger.info("回写刷卡记录:" + "WorkshopNo:" + workshopNo + ",CardID:" + cardID + ",swipeCardTime:"
 										+ swipeCardTime + "成功");
 							}
@@ -109,7 +110,7 @@ public class SwipeRecordLogToDB {
 
 	}
 
-	public static void swipeCardlogToDB(String WorkshopNo, String CardID, String swipeCardTime) {
+	public static void swipeCardlogToDB(String WorkshopNo, String lineNo, String CardID, String swipeCardTime) {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			// 通過卡號查詢員工個人信息
@@ -124,7 +125,7 @@ public class SwipeRecordLogToDB {
 			DateFormat fmt =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date swipeCardTimeDate = fmt.parse(swipeCardTime);
 			String Record_Status="7";
-			swipeCardService.addRawSwipeRecord(session, eif, CardID, swipeCardTimeDate, WorkshopNo,Record_Status);
+			swipeCardService.addRawSwipeRecord(session, eif, CardID, swipeCardTimeDate, WorkshopNo,Record_Status,lineNo);
 		
 		} catch (Exception ex) {
 			logger.info("刷卡記錄回寫失敗！原因:" + ex);
