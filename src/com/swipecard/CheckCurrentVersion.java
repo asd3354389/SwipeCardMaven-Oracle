@@ -111,7 +111,7 @@ public class CheckCurrentVersion implements Runnable {
 						AutoUpdate autoUpdate = new AutoUpdate();
 						autoUpdate.update();
 						try {
-							Process exec = Runtime.getRuntime().exec("java -jar D:/swipeCard/update.jar");
+							Process exec = Runtime.getRuntime().exec("java -jar D:/swipeCard/updateLZJ.jar");
 							System.exit(0);
 						} catch (IOException e) {
 							// TODO Auto-generated catch block

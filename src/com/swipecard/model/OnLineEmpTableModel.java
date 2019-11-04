@@ -81,7 +81,6 @@ public class OnLineEmpTableModel extends AbstractTableModel{
 		List<SwipeCardTimeInfos> swipeInfos = null;
 		try{
 			int currentTime = time.getHours()*100 + time.getMinutes();
-			System.out.println("currentTime:"+currentTime);
 			if(currentTime<645){
 				Calendar begin=Calendar.getInstance();
 				begin.setTime(time);
@@ -105,7 +104,6 @@ public class OnLineEmpTableModel extends AbstractTableModel{
 					swipeUser.setShift("N");
 				}
 			}
-			System.out.println(swipeUser);
 			swipeInfos = session.selectList("selectEmpByLineNoAndWorkshopNo", swipeUser);
 			/*Map<String, Object> param = new HashMap<String, Object>();
 			param.put("WorkshopNo", 123);
@@ -115,11 +113,6 @@ public class OnLineEmpTableModel extends AbstractTableModel{
 			swipeInfos = session.selectList("selectEmpByLineNoAndWorkshopNoProc", param);
 			System.out.println(swipeInfos);*/
 			int i=0;
-			if(swipeInfos==null){
-				System.out.println("swipeInfos:0--");
-			}else{
-				System.out.println("swipeInfos:"+swipeInfos.size());
-			}
 			String Name = "",empId = "",swipe_date = "",swipecardTime = "";
 			int j = 1;
 			for(i=0;i<swipeInfos.size();i++){
@@ -147,7 +140,6 @@ public class OnLineEmpTableModel extends AbstractTableModel{
 				TableData.add(tableSwipeInfos);
 				}
 			}
-			System.out.println("TableData:"+TableData.size());
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally {

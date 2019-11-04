@@ -24,6 +24,8 @@ import com.swipecard.model.EmpShiftInfos;
 import com.swipecard.model.Employee;
 import com.swipecard.model.RCLine;
 import com.swipecard.model.RawRecord;
+import com.swipecard.model.RepairSwipecard;
+import com.swipecard.model.RepairWorkshopNo;
 import com.swipecard.model.SwingBase;
 import com.swipecard.model.SwipeCardTimeInfos;
 import com.swipecard.model.WorkedOneWeek;
@@ -274,9 +276,8 @@ public class SwipeCardService {
 	}
 	
 	/*原outWorkSwipeDuplicate*/
-	public SwingBase offDutySwipeDuplicate(SqlSession session, Employee employee, Date swipeCardTime, String curShift) {
+	public SwingBase offDutySwipeDuplicate(SqlSession session, Employee employee, Date swipeCardTime, String curShift) throws Exception{
 		SwingBase fieldSetting=new SwingBase();
-		try {
 			fieldSetting.setFieldColor(Color.WHITE);
 			fieldSetting.setFieldContent("ID: " + employee.getId() + " Name: " + employee.getName() + "\n" + "下班重複刷卡！\n\n");
 			RawRecord swipeRecord=new RawRecord();
@@ -286,17 +287,12 @@ public class SwipeCardService {
 			swipeRecord.setRecord_Status("5");
 			session.update("updateRawRecordStatus",swipeRecord);
 			session.commit();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
 		return fieldSetting;
 	}
 	
 	/*原goWorkSwipeDuplicate*/
-	public SwingBase onDutySwipeDuplicate(SqlSession session,Employee employee, Date swipeCardTime, String curShift) {
+	public SwingBase onDutySwipeDuplicate(SqlSession session,Employee employee, Date swipeCardTime, String curShift) throws Exception{
 		SwingBase fieldSetting=new SwingBase();
-		try {
 			fieldSetting.setFieldColor(Color.WHITE);
 			fieldSetting.setFieldContent("ID: " + employee.getId() + " Name: " + employee.getName() + "\n" + "上班重複刷卡！\n\n");
 			RawRecord swipeRecord=new RawRecord();
@@ -306,19 +302,14 @@ public class SwipeCardService {
 			swipeRecord.setRecord_Status("5");
 			session.update("updateRawRecordStatus",swipeRecord);
 			session.commit();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
 		return fieldSetting;
 	}
 	
 	/*原outWorkNSwipeCard*/
-	public SwingBase offDutyNightShiftSwipeCard(SqlSession session,String RCNO,String PrimaryItemNo,String workShop,Employee employee, Date swipeCardTime, EmpShiftInfos empYesShift, String PROD_LINE_CODE) {
+	public SwingBase offDutyNightShiftSwipeCard(SqlSession session,String RCNO,String PrimaryItemNo,String workShop,Employee employee, Date swipeCardTime, EmpShiftInfos empYesShift, String PROD_LINE_CODE) throws Exception{
 		SwipeCardTimeInfos userNSwipe = new SwipeCardTimeInfos();
 		Date SwipeCardTime2 = swipeCardTime;
 		SwingBase fieldSetting=new SwingBase();
-		try {
 			userNSwipe.setEMP_ID(employee.getId());
 			userNSwipe.setSWIPE_DATE(FormatDateUtil.getYesterdayDate());
 			userNSwipe.setSwipeCardTime2(SwipeCardTime2);
@@ -404,17 +395,12 @@ public class SwipeCardService {
 					session.commit();
 				}
 			}
-		}
-		catch(Exception ex) {
-			ex.printStackTrace();
-		}
 		return fieldSetting;
 	}
 
 	/*原outWorkSwipeCard*/
-	public SwingBase offDutyDaySwipeCard(SqlSession session,Employee employee,String workShop, Date swipeCardTime,EmpShiftInfos empCurShift) {
+	public SwingBase offDutyDaySwipeCard(SqlSession session,Employee employee,String workShop, Date swipeCardTime,EmpShiftInfos empCurShift) throws Exception{
 		SwingBase fieldSetting=new SwingBase(); 
-		try {
 			String swipeCardTimeStr = FormatDateUtil.changeTimeToStr(swipeCardTime);
 			SwipeCardTimeInfos userSwipe = new SwipeCardTimeInfos();
 			userSwipe.setEMP_ID(employee.getId());
@@ -450,18 +436,12 @@ public class SwipeCardService {
 				session.update("updateOutWorkDSwipeTime", userSwipe);
 				session.commit();
 			}
-		}
-		catch(Exception ex) {
-			ex.printStackTrace();
-			logger.error("offDutyDaySwipeCard exception",ex);
-		}
 		return fieldSetting;
 	}
 
 	/*原goWorkSwipeCard*/
-	public SwingBase onDutyDaySwipeCard(SqlSession session, Employee employee, Date swipeCardTime,EmpShiftInfos empCurShift,String RCNO,String PrimaryItemNo,String workShopNo, String PROD_LINE_CODE) {
+	public SwingBase onDutyDaySwipeCard(SqlSession session, Employee employee, Date swipeCardTime,EmpShiftInfos empCurShift,String RCNO,String PrimaryItemNo,String workShopNo, String PROD_LINE_CODE) throws Exception{
 		SwingBase fieldSetting=new SwingBase();
-		try {
 			String curDate=FormatDateUtil.getCurDate();
 			String swipeCardTimeStr = FormatDateUtil.changeTimeToStr(swipeCardTime);
 			Timestamp swipeTime = new java.sql.Timestamp(swipeCardTime.getTime());
@@ -502,20 +482,14 @@ public class SwipeCardService {
 					session.commit();
 				}
 			}
-		}
-		catch(Exception ex) {
-			ex.printStackTrace();
-			logger.error("onDutyDaySwipeCard exception",ex);
-		}
 		return fieldSetting;
 	}
 
 	/*goOrOutWorkSwipeRecord*/
 	public SwingBase onDutyOrOffDutySwipeRecord(SqlSession session, Employee employee, Date swipeCardTime,
-			EmpShiftInfos empCurShift,String workShopNo,String RCNO,String PrimaryItemNo,String PROD_LINE_CODE) {
+			EmpShiftInfos empCurShift,String workShopNo,String RCNO,String PrimaryItemNo,String PROD_LINE_CODE) throws Exception{
 		SwipeCardTimeInfos userSwipe = new SwipeCardTimeInfos();	
 		SwingBase fieldSetting=new SwingBase();
-		try {
 			userSwipe.setEMP_ID(employee.getId());
 			userSwipe.setSWIPE_DATE(FormatDateUtil.getCurDate());
 			userSwipe.setSwipeCardTime(swipeCardTime);
@@ -539,18 +513,12 @@ public class SwipeCardService {
 				}
 			}
 			
-		}
-		catch(Exception ex) {
-			ex.printStackTrace();
-			logger.error("onDutyOrOffDutySwipeRecord Exception",ex);
-		}
 		return fieldSetting;
 	}
 	
-	public SwingBase swipeCardRecord(SqlSession session, Employee employee, Date swipeCardTime,String RCNO,String PrimaryItemNo,String workShopNo,String PROD_LINE_CODE) {
+	public SwingBase swipeCardRecord(SqlSession session, Employee employee, Date swipeCardTime,String RCNO,String PrimaryItemNo,String workShopNo,String PROD_LINE_CODE) throws Exception {
 		SwingBase fieldSetting=new SwingBase(); 
 		EmpShiftInfos curShiftUser = new EmpShiftInfos();
-		try {
 			curShiftUser.setId(employee.getId());
 			curShiftUser.setShiftDay(0);
 			int empCurShiftCount =  session.selectOne("getShiftCount", curShiftUser);
@@ -668,15 +636,10 @@ public class SwipeCardService {
 					}					
 				}
 			}
-		}
-		catch(Exception ex) {
-			ex.printStackTrace();
-			logger.error("swipeCardRecord exception",ex);
-		}
 		return fieldSetting;
 	}
 	
-	public String getLocalIp() {
+	public String getLocalIp() throws Exception{
 		// TODO Auto-generated method stub
 				Enumeration allNetInterfaces = null;
 				try {
@@ -703,5 +666,328 @@ public class SwipeCardService {
 				}
 				return ipv4;
 	}
+	
+	/*更新車間線別維修表的status*/
+	public void updateRepairStatus(SqlSession session, Employee eif,Date SwipeCardTime,RepairWorkshopNo repairWorkshopNo,String status, String UUID) throws Exception{
+		String Id=null;
+			if(eif!=null)
+				Id=eif.getId();
+			if(Id==null){
+				Id="";
+			}
+			
+			if(status==null){
+				status="99";
+			}
+			synchronized (this) {	
+				RepairWorkshopNo repairInfo = new RepairWorkshopNo();
+				repairInfo.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+				repairInfo.setLineno(repairWorkshopNo.getLineno());
+				repairInfo.setStatus(status);
+				repairInfo.setUpdate_time(SwipeCardTime);
+				repairInfo.setUpdate_userid(Id);
+				repairInfo.setRecv_id(UUID);
+				session.update("updateRepairStatus", repairInfo);
+			}
+	}
+	
+	
+	
+	/*記錄一筆刷卡資料至WORKSHOP_LINE_SWIPECARD table中*/
+	public void addRepairSwipecardIn(SqlSession session, Employee eif,Date SwipeCardTime,RepairWorkshopNo repairWorkshopNo,String Reason, String swipeType, String privilegeLevel) throws Exception{
+		String Id=null;
+			if(eif!=null)
+				Id=eif.getId();
+			if(Id==null){
+				Id="";
+			}
+			String lineno=null;
+			lineno = repairWorkshopNo.getLineno();
+			if(lineno==null){
+				lineno="";
+			}
+			if(Reason==null){
+				Reason="999999";
+			}
+			synchronized (this) {	
+				RepairSwipecard repairSwipecard = new RepairSwipecard();
+				repairSwipecard.setId(Id);
+				repairSwipecard.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+				repairSwipecard.setLineNo(lineno);
+				repairSwipecard.setSwipe_In(SwipeCardTime);
+				repairSwipecard.setReason_No(Reason);
+				repairSwipecard.setRecv_id(repairWorkshopNo.getRecv_id());
+				repairSwipecard.setSwipeType(swipeType);
+				repairSwipecard.setPrivilegeLevel(privilegeLevel);
+				session.insert("addRepairSwipecardIn", repairSwipecard);
+			}
+	}
+	
+	private void updateRepairSwipecard(SqlSession session, Employee eif, Date SwipeCardTime,
+			RepairWorkshopNo repairWorkshopNo, String Reason, String UUID) throws Exception {
+		// TODO Auto-generated method stub
+		String Id=null;
+		if(eif!=null)
+			Id=eif.getId();
+		if(Id==null){
+			Id="";
+		}
+		if(Reason==null){
+			Reason="999999";
+		}
+		synchronized (this) {	
+			RepairSwipecard repairSwipecard = new RepairSwipecard();
+			repairSwipecard.setId(Id);
+			repairSwipecard.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairSwipecard.setLineNo(repairWorkshopNo.getLineno());
+			repairSwipecard.setSwipe_In(SwipeCardTime);
+			repairSwipecard.setSwipe_Out(SwipeCardTime);
+			repairSwipecard.setReason_No(Reason);
+			repairSwipecard.setRecv_id(UUID);
+			session.update("updateRepairSwipecardOut", repairSwipecard);
+		}
+	}
 
+	public SwingBase mechanicInOfOut(SqlSession session, Employee eif, Date swipeCardTime, RepairWorkshopNo repairInfo,
+			String ReasonNO, String swipeType, String privilegeLevel) throws Exception {
+		// TODO Auto-generated method stub
+		SwingBase fieldSetting=new SwingBase(); 
+		String swipeCardTimeStr = FormatDateUtil.changeTimeToStr(swipeCardTime);
+		RepairSwipecard repairSwipecard = new RepairSwipecard();
+		repairSwipecard.setId(eif.getId());
+		repairSwipecard.setWorkshopNo(repairInfo.getWorkshopNo());
+		repairSwipecard.setLineNo(repairInfo.getLineno());
+		repairSwipecard.setRecv_id(repairInfo.getRecv_id());
+		int repairEmpSwipecardCount = session.selectOne("selectrepairEmpSwipecardCount",repairSwipecard);
+		if(repairEmpSwipecardCount>0){
+			updateRepairSwipecard(session,eif,swipeCardTime,repairInfo,ReasonNO,repairInfo.getRecv_id());
+			fieldSetting.setFieldColor(Color.WHITE);
+			fieldSetting.setFieldContent("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+					+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+					+ "\n" + "修理線別故障完成！\n------------\n");
+		}else{
+			addRepairSwipecardIn(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+			fieldSetting.setFieldColor(Color.WHITE);
+			fieldSetting.setFieldContent("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+					+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+					+ "\n" + "開始修理線別故障！\n------------\n");
+		}
+		
+		return fieldSetting;
+	}
+	
+	public void updateSwipecardOut(SqlSession session, Date SwipeCardTime,
+			RepairWorkshopNo repairWorkshopNo, String Reason, String status, String swipeType, String privilegeLevel) throws Exception {
+		// TODO Auto-generated method stub
+		if(Reason==null){
+			Reason="999999";
+		}
+		synchronized (this) {	
+			RepairSwipecard repairSwipecard = new RepairSwipecard();
+			repairSwipecard.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairSwipecard.setLineNo(repairWorkshopNo.getLineno());
+			repairSwipecard.setSwipe_In(SwipeCardTime);
+			repairSwipecard.setSwipe_Out(SwipeCardTime);
+			repairSwipecard.setReason_No(Reason);
+			repairSwipecard.setRecv_id(repairWorkshopNo.getRecv_id());
+			repairSwipecard.setSwipeType(swipeType);
+			repairSwipecard.setPrivilegeLevel(privilegeLevel);
+			session.update("updateSwipecardOut", repairSwipecard);
+			
+			if(status==null||status.equals("")){
+				status="99";
+			}
+			RepairWorkshopNo repairInfo = new RepairWorkshopNo();
+			repairInfo.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairInfo.setLineno(repairWorkshopNo.getLineno());
+			repairInfo.setStatus(status);
+			repairInfo.setUpdate_time(SwipeCardTime);
+			
+			session.update("updateStatus", repairInfo);
+		}
+	}
+	
+	public void updateSwipecardEnd(SqlSession session, Date SwipeCardTime,
+			RepairWorkshopNo repairWorkshopNo, String Reason, String status, Employee eif) throws Exception {
+		// TODO Auto-generated method stub
+		if(Reason==null){
+			Reason="999999";
+		}
+		synchronized (this) {	
+			RepairSwipecard repairSwipecard = new RepairSwipecard();
+			repairSwipecard.setRecv_id(repairWorkshopNo.getRecv_id());
+			repairSwipecard.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairSwipecard.setLineNo(repairWorkshopNo.getLineno());
+			repairSwipecard.setSwipe_In(SwipeCardTime);
+			repairSwipecard.setSwipe_Out(SwipeCardTime);
+			repairSwipecard.setReason_No(Reason);
+			System.out.println(repairSwipecard);
+			session.update("updateSwipecardEnd", repairSwipecard);
+			
+			if(status==null||status.equals("")){
+				status="99";
+			}
+			RepairWorkshopNo repairInfo = new RepairWorkshopNo();
+			repairInfo.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairInfo.setLineno(repairWorkshopNo.getLineno());
+			repairInfo.setStatus(status);
+			repairInfo.setUpdate_time(SwipeCardTime);
+			repairInfo.setUpdate_userid(eif.getId());
+			
+			session.update("updateStatusEnd", repairInfo);
+			
+			this.addLineLeaderSwipecardOut(session,eif,SwipeCardTime,repairWorkshopNo,Reason,"1","1");
+		}
+	}
+
+	public SwingBase updateOtherSwipecard(SqlSession session, Date swipeCardTime, RepairWorkshopNo repairInfo, String ReasonNO,
+			String status, Employee eif, String UUID, String swipeType, String privilegeLevel) throws Exception {
+		// TODO Auto-generated method stub
+		SwingBase fieldSetting=new SwingBase(); 
+		String swipeCardTimeStr = FormatDateUtil.changeTimeToStr(swipeCardTime);
+		RepairSwipecard repairSwipecard = new RepairSwipecard();
+		repairSwipecard.setId(eif.getId());
+		repairSwipecard.setWorkshopNo(repairInfo.getWorkshopNo());
+		repairSwipecard.setLineNo(repairInfo.getLineno());
+		int repairEmpSwipecardCount = session.selectOne("selectOtherEmpSwipecardCount",repairSwipecard);
+		if(repairEmpSwipecardCount>0){
+			updateRepairSwipecard(session,eif,swipeCardTime,repairInfo,ReasonNO,UUID);
+			fieldSetting.setFieldColor(Color.WHITE);
+			fieldSetting.setFieldContent("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+					+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+					+ "\n" + "修理線別故障完成！\n------------\n");
+		}else{
+			addRepairSwipecardIn(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+			fieldSetting.setFieldColor(Color.WHITE);
+			fieldSetting.setFieldContent("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+					+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+					+ "\n" + "開始修理線別故障！\n------------\n");
+		}
+		
+		return fieldSetting;
+	}
+	
+	public SwingBase otherSwipecardInOfOut(SqlSession session, Employee eif, Date swipeCardTime, RepairWorkshopNo repairInfo,
+			String ReasonNO, String swipecardClass, String swipeType, String privilegeLevel) throws Exception {
+		// TODO Auto-generated method stub
+		SwingBase fieldSetting=new SwingBase(); 
+		String swipeCardTimeStr = FormatDateUtil.changeTimeToStr(swipeCardTime);
+		RepairSwipecard repairSwipecard = new RepairSwipecard();
+		repairSwipecard.setId(eif.getId());
+		repairSwipecard.setWorkshopNo(repairInfo.getWorkshopNo());
+		repairSwipecard.setLineNo(repairInfo.getLineno());
+		repairSwipecard.setReason_No(ReasonNO);
+		repairSwipecard.setSwipeType(swipeType);
+		repairSwipecard.setPrivilegeLevel(privilegeLevel);
+		int repairEmpSwipecardCount = session.selectOne("selectOtherEmpSwipecardCount",repairSwipecard);
+		if(repairEmpSwipecardCount>0){
+			updateOtherSwipecard(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+			fieldSetting.setFieldColor(Color.WHITE);
+			fieldSetting.setFieldContent(swipecardClass + "刷卡\n" + "ID: " + eif.getId() + "\nName: "
+					+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+					+ "\n" + swipecardClass + "下刷！\n------------\n");
+		}else{
+			addRepairSwipecardIn(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+			fieldSetting.setFieldColor(Color.WHITE);
+			fieldSetting.setFieldContent(swipecardClass + "刷卡\n" + "ID: " + eif.getId() + "\nName: "
+					+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+					+ "\n" + swipecardClass + "上刷！\n------------\n");
+		}
+		
+		return fieldSetting;
+	}
+	
+	private void updateOtherSwipecard(SqlSession session, Employee eif, Date SwipeCardTime,
+			RepairWorkshopNo repairWorkshopNo, String Reason, String swipeType, String privilegeLevel) throws Exception {
+		// TODO Auto-generated method stub
+		String Id=null;
+		if(eif!=null)
+			Id=eif.getId();
+		if(Id==null){
+			Id="";
+		}
+		synchronized (this) {	
+			RepairSwipecard repairSwipecard = new RepairSwipecard();
+			repairSwipecard.setId(Id);
+			repairSwipecard.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairSwipecard.setLineNo(repairWorkshopNo.getLineno());
+			repairSwipecard.setSwipe_In(SwipeCardTime);
+			repairSwipecard.setSwipe_Out(SwipeCardTime);
+			repairSwipecard.setReason_No(Reason);
+			repairSwipecard.setPrivilegeLevel(privilegeLevel);
+			repairSwipecard.setSwipeType(swipeType);
+			session.update("updateOtherSwipecardOut", repairSwipecard);
+		}
+	}
+
+	public void addLineLeaderSwipecardIn(SqlSession session, Employee eif, Date SwipeCardTime,
+			RepairWorkshopNo repairWorkshopNo, String Reason, String UUID, String swipeType, String privilegeLevel) throws Exception{
+		String Id=null;
+		if(eif!=null)
+			Id=eif.getId();
+		if(Id==null){
+			Id="";
+		}
+		String lineno=null;
+		lineno = repairWorkshopNo.getLineno();
+		if(lineno==null){
+			lineno="";
+		}
+		if(Reason==null){
+			Reason="999999";
+		}
+		synchronized (this) {	
+			RepairSwipecard repairSwipecard = new RepairSwipecard();
+			repairSwipecard.setId(Id);
+			repairSwipecard.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairSwipecard.setLineNo(lineno);
+			repairSwipecard.setSwipe_In(SwipeCardTime);
+			repairSwipecard.setReason_No(Reason);
+			repairSwipecard.setRecv_id(UUID);
+			repairSwipecard.setSwipeType(swipeType);
+			repairSwipecard.setPrivilegeLevel(privilegeLevel);
+			session.insert("addLineLeaderSwipecardIn", repairSwipecard);
+		}
+	}
+
+	public void addLineLeaderSwipecardOut(SqlSession session, Employee eif, Date SwipeCardTime,
+			RepairWorkshopNo repairWorkshopNo, String Reason, String swipeType, String privilegeLevel) throws Exception{
+		// TODO Auto-generated method stub
+		String Id=null;
+		if(eif!=null)
+			Id=eif.getId();
+		if(Id==null){
+			Id="";
+		}
+		String lineno=null;
+		lineno = repairWorkshopNo.getLineno();
+		if(lineno==null){
+			lineno="";
+		}
+		if(Reason==null){
+			Reason="999999";
+		}
+		synchronized (this) {	
+			RepairSwipecard repairSwipecard = new RepairSwipecard();
+			repairSwipecard.setId(Id);
+			repairSwipecard.setWorkshopNo(repairWorkshopNo.getWorkshopNo());
+			repairSwipecard.setLineNo(lineno);
+			repairSwipecard.setSwipe_In(SwipeCardTime);
+			repairSwipecard.setReason_No(Reason);
+			repairSwipecard.setRecv_id(repairWorkshopNo.getRecv_id());
+			repairSwipecard.setSwipeType(swipeType);
+			repairSwipecard.setPrivilegeLevel(privilegeLevel);
+			System.out.println(repairSwipecard);
+			session.insert("addLineLeaderSwipecardOut", repairSwipecard);
+		}
+	}
+
+	public String getUUID(SqlSession session, RawRecord swipeRecord) throws Exception{
+		// TODO Auto-generated method stub
+		String UUID = session.selectOne("getUUID", swipeRecord);
+		return UUID;
+	}
+
+	
+	
 }

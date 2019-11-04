@@ -57,7 +57,7 @@ import com.swipecard.util.PingDBIPUtil;
 import com.swipecard.util.SwipeCardJButton;
 
 public class SwipeCardNoDB extends JFrame {
-	private final static String CurrentVersion="V20190717";	
+	private final static String CurrentVersion="V20191009";	
 	private static Logger logger = Logger.getLogger(SwipeCardNoDB.class);
 	private String DEFAULT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	private String time;
@@ -71,7 +71,7 @@ public class SwipeCardNoDB extends JFrame {
 	static JLabel label1, label3, swipeTimeLable, curTimeLable;
 	static JPanel panel1;
 	static ImageIcon image;
-	static JLabel labelT1_1, labelT1_3, labelT1_4;
+	static JLabel labelT1_1, labelT1_3, labelT1_4,labelT1_5;
 	static SwipeCardJButton butT1_5, butT1_6;
 	static JTextArea jtextT1_1, jtextT1_2;
 	static TextField textT1_3, textT1_1;
@@ -101,7 +101,7 @@ public class SwipeCardNoDB extends JFrame {
 		@Override
 		public void run() {
 			PingDBIPUtil PingUtil = new PingDBIPUtil();
-		    String ipAddress = "192.168.244.59";
+		    String ipAddress = "192.168.64.224";
 	        try {
 				 // System.out.println(PingUtil.ping(ipAddress));
 				 // PingUtil.ping02(ipAddress);
@@ -168,6 +168,10 @@ public class SwipeCardNoDB extends JFrame {
 		
 		labelT1_4 = new JLabel("線號:");
 		labelT1_4.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		
+		labelT1_5 = new JLabel("<html>當前狀態為斷網狀態，刷卡只顯示卡號，請勿重新打開，否則若沒有網絡會打不開程序</html>");
+		labelT1_5.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		labelT1_5.setForeground(Color.red);
 
 		JsonFileUtil jsonFileUtil = new JsonFileUtil();
 		final Object[] WorkshopNo = jsonFileUtil.getWorkshopNoByJson();
@@ -206,6 +210,7 @@ public class SwipeCardNoDB extends JFrame {
 		labelT1_1.setBounds(x1 + 20, y1, x7, y1);
 		labelT1_3.setBounds(x1 + 20, 2 * y1 + 20, x7, y1);
 		labelT1_4.setBounds(x1 + 20, 4 * y1 + 80, x7, y1);
+		labelT1_5.setBounds(x1 + 20, 6 * y1 + 80, x5 * 3, y4);
 		comboBox2.setBounds(x1 + x7, 4 * y1 + 80, y4 + 100, y1);
 
 		// textT1_1.setBounds(x1 + x7, 1 * y1, y4 + 100, y1);
@@ -257,6 +262,7 @@ public class SwipeCardNoDB extends JFrame {
 		panel1.add(textT1_3);
 
 		panel1.add(labelT1_4);
+		panel1.add(labelT1_5);
 		panel1.add(labelT1_1);
 		panel1.add(labelT1_3);
 		panel1.add(swipeTimeLable);
@@ -443,6 +449,13 @@ public class SwipeCardNoDB extends JFrame {
 		// textT1_1.setText(WorkshopNo);// 綁定車間
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		// 使用swing的线程做獲取焦點的界面绘制，避免获取不到的情况。
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						textT1_3.requestFocusInWindow();
+					}
+				});
 	}
 
 	public Object[] getLineno(String selectWorkshopNo) {// TODO
@@ -498,5 +511,4 @@ public class SwipeCardNoDB extends JFrame {
 		final String defaultWorkshopNo = jsonFileUtil.getSaveWorkshopNo();
 		SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
 	}
-
 }

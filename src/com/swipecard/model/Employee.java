@@ -12,6 +12,8 @@ public class Employee {
 	private String CostID;
 	private int	Permission;
 	private int isOnWork;
+	private String Job_Title;
+	private String Job_Name;
 	private Date UpdateDate;
 	
 	public String getId() {
@@ -73,6 +75,18 @@ public class Employee {
 	}
 	public void setUpdateDate(Date updateDate) {
 		UpdateDate = updateDate;
+	}
+	public String getJob_Title() {
+		return Job_Title;
+	}
+	public void setJob_Title(String job_Title) {
+		Job_Title = job_Title;
+	}
+	public String getJob_Name() {
+		return Job_Name;
+	}
+	public void setJob_Name(String job_Name) {
+		Job_Name = job_Name;
 	}
 	@Override
 	public String toString() {

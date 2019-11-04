@@ -275,7 +275,7 @@
 		select version,sysdate as db_time
 		from SWIPE.Swipecard_Version
 		where is_avaliable='T'
-		and Prog_Name='SwipeCard'
+		and Prog_Name='SwipeCardLZJ'
 	</select>
 
 	<!-- Check Continues workers(7 days) -->
@@ -388,7 +388,216 @@
 	    and a.swipecardtime2 is null 
 	</select>
 	
-	<select id="selectEmpByLineNoAndWorkshopNoProc" statementType="CALLABLE" parameterType="map" >
+	<select id="selectRepairWorkshopNo" parameterType="String" resultType="String">
+		select distinct(t.workshopno) from SWIPE.WORKSHOP_LINE_STATUS t where t.enabled = 'Y' order by t.workshopno asc
+	</select>
+	
+	<select id="getRepairLineNoStatus" parameterType="String" resultType="RepairWorkshopNo">
+		select * from SWIPE.WORKSHOP_LINE_STATUS t 
+		where t.workshopno = #{workshopno} and t.enabled = 'Y' order by instr( '1,2,3,4,5,6,7,8,9,0',rtrim(cast(t.status as nchar))),lineno
+	</select>
+	
+	<select id="isRepairWorkshopNo" parameterType="RawRecord" resultType="int">
+		select count(*) from SWIPE.WORKSHOP_LINE_STATUS t where t.workshopno = #{WorkshopNo} and nvl(t.lineno,'0') = #{LineNo} and t.enabled = 'Y'
+	</select>
+	
+	<select id="getRepairInfo" parameterType="RawRecord" resultType="RepairWorkshopNo">
+		select * from SWIPE.WORKSHOP_LINE_STATUS t 
+		where t.workshopno = #{WorkshopNo} and t.enabled = 'Y' and nvl(t.lineno,'0') = #{LineNo}
+	</select>
+	
+	<insert id="addRepairSwipecardIn" parameterType="RepairSwipecard">
+			insert into SWIPE.WORKSHOP_LINE_SWIPECARD(ID,Workshopno,Lineno,Swipe_In,Reason_No,Recv_id,swipe_type,emp_privilege_level) values(#{Id},#{WorkshopNo},#{LineNo},#{Swipe_In},#{Reason_No},#{Recv_id},#{SwipeType},#{PrivilegeLevel})
+	</insert>
+	
+	<insert id="addLineLeaderSwipecardIn" parameterType="RepairSwipecard">
+			insert into SWIPE.WORKSHOP_LINE_SWIPECARD(ID,Workshopno,Lineno,Swipe_In,Reason_No,Recv_id,swipe_type,emp_privilege_level) values(#{Id},#{WorkshopNo},#{LineNo},#{Swipe_In},#{Reason_No},#{Recv_id},#{SwipeType},#{PrivilegeLevel})
+	</insert>
+	
+	<insert id="addLineLeaderSwipecardOut" parameterType="RepairSwipecard">
+			insert into SWIPE.WORKSHOP_LINE_SWIPECARD(ID,Workshopno,Lineno,Swipe_Out,Reason_No,Recv_id,swipe_type,emp_privilege_level) values(#{Id},#{WorkshopNo},#{LineNo},#{Swipe_In},#{Reason_No},#{Recv_id},#{SwipeType},#{PrivilegeLevel})
+	</insert>
+	
+	<update id="updateRepairSwipecardOut" parameterType="RepairSwipecard">
+		update  SWIPE.WORKSHOP_LINE_SWIPECARD t set t.swipe_out = #{Swipe_Out}
+		<if test="Reason_No!=null">
+			,t.reason_no = #{Reason_No} 
+		</if>
+		where t.id = #{Id} and t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.recv_id = #{Recv_id} and t.swipe_type = '1' and t.emp_privilege_level = '2'
+		<if test="LineNo!=null">
+			and t.lineno = #{LineNo}
+		</if>
+		<if test="LineNo==null">
+			and t.lineno is null
+		</if>
+	</update>
+	
+	<update id="updateRepairStatus" parameterType="RepairWorkshopNo">
+		update SWIPE.WORKSHOP_LINE_STATUS t set t.status = #{Status},t.update_time = #{Update_time},t.update_userid = #{Update_userid}
+		<if test="Recv_id!=null">
+			,t.Recv_id = #{Recv_id}
+		</if> 
+		 where t.workshopno = #{WorkshopNo}
+		<if test="Lineno!=null">
+			and t.lineno = #{Lineno}
+		</if>
+		<if test="Lineno==null">
+			and t.lineno is null
+		</if>
+	</update>
+	
+	<select id="selectrepairEmpSwipecardCount" parameterType="RepairSwipecard" resultType="int">
+		select count(*) from SWIPE.WORKSHOP_LINE_SWIPECARD t 
+		where t.id = #{Id} and t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.recv_id = #{Recv_id} and t.swipe_type = '1' and t.emp_privilege_level = '2'
+		<if test="LineNo!=null">
+			and t.lineno = #{LineNo}
+		</if>
+		<if test="LineNo==null">
+			and t.lineno is null
+		</if>
+	</select>
+	
+	<select id="selectNoSwipeOutCount" parameterType="RepairWorkshopNo" resultType="int">
+	select count(*) from SWIPE.WORKSHOP_LINE_SWIPECARD t ,SWIPE.csr_employee a 
+	where t.id = a.id and a.isonwork = '0' and  t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.recv_id = #{Recv_id} and t.swipe_type = '1' and t.emp_privilege_level = '2'
+		<if test="Lineno!=null">
+			and t.lineno = #{Lineno}
+		</if>
+		<if test="Lineno==null">
+			and t.lineno is null
+		</if>
+	</select>
+	
+	<select id="selectNoSwipeOut" parameterType="RepairWorkshopNo" resultType="Employee">
+		select a.* from SWIPE.WORKSHOP_LINE_SWIPECARD t,SWIPE.csr_employee a 
+		where t.id = a.id and a.isonwork = '0' and  t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.recv_id = #{Recv_id} and t.swipe_type = '1' and t.emp_privilege_level = '2'
+		<if test="Lineno!=null">
+			and t.lineno = #{Lineno}
+		</if>
+		<if test="Lineno==null">
+			and t.lineno is null
+		</if>
+	</select>
+	
+	<update id="updateSwipecardOut" parameterType="RepairSwipecard">
+		update  SWIPE.WORKSHOP_LINE_SWIPECARD t set t.swipe_out = #{Swipe_Out}
+		<if test="Reason_No!=null">
+			,t.reason_no = #{Reason_No} 
+		</if>
+		where t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.recv_id = #{Recv_id} and t.swipe_type = #{SwipeType} and t.emp_privilege_level = #{PrivilegeLevel}
+		<if test="LineNo!=null">
+			and t.lineno = #{LineNo}
+		</if>
+		<if test="LineNo==null">
+			and t.lineno is null
+		</if>
+	</update>
+	
+	<update id="updateSwipecardEnd" parameterType="RepairSwipecard">
+		update  SWIPE.WORKSHOP_LINE_SWIPECARD t set t.swipe_out = #{Swipe_Out}
+		<if test="Reason_No!=null">
+			,t.reason_no = #{Reason_No} 
+		</if>
+		where t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.recv_id = #{Recv_id} and t.swipe_type = '1' and t.emp_privilege_level != '1'
+		<if test="LineNo!=null">
+			and t.lineno = #{LineNo}
+		</if>
+		<if test="LineNo==null">
+			and t.lineno is null
+		</if>
+	</update>
+	
+	<update id="updateStatus" parameterType="RepairWorkshopNo">
+		update SWIPE.WORKSHOP_LINE_STATUS t set t.status = #{Status},t.update_time = #{Update_time}
+		where t.workshopno = #{WorkshopNo} 
+		<if test="Lineno!=null">
+			and t.lineno = #{Lineno}
+		</if>
+		<if test="Lineno==null">
+			and t.lineno is null
+		</if>
+	</update>
+	
+	<select id="selectReasonClassList" resultType="String">
+		select distinct(t.reason_class) from SWIPE.PDLINE_MAINTENANCE_REASONS t where t.enabled = 'Y'
+	</select>
+	
+	<select id="selectReasonDescList" parameterType="String" resultType="RepairReasons">
+		select * from SWIPE.PDLINE_MAINTENANCE_REASONS t where t.Reason_Class = #{Reason_Class} and t.enabled = 'Y'
+	</select>
+	
+	<select id="getJobCode" parameterType="String" resultType="String">
+		select b.job_code from SWIPE.FOXLINK_JOB_INFO b where b.job_desc like #{job_desc}
+	</select>
+	
+	<select id="getLineLeaderJobCode" resultType="String">
+		select * from SWIPE.FOXLINK_JOB_INFO b where b.job_desc like '%生產技術%' or b.job_desc like '%線長%' or b.job_desc like '%全技員%'
+	</select>
+	
+	<select id="getQCJobCode" parameterType="String" resultType="String">
+		select b.job_code from SWIPE.FOXLINK_JOB_INFO b where b.job_desc like '%品檢%' or b.job_desc like '%品管%'
+	</select>
+	
+	<select id="getPrivilegeCount" parameterType="String" resultType="int">
+		select count(*) from SWIPE.EMP_PRIVILEGE_LEVEL t where t.id = #{id} and t.enabled = 'Y'
+	</select>
+	
+	<select id="selectPrivilegeLevel" parameterType="String" resultType="String">
+		select privilege_level from SWIPE.EMP_PRIVILEGE_LEVEL t where t.id = #{id} and t.enabled = 'Y'
+	</select>
+	
+	<update id="updateStatusEnd" parameterType="RepairWorkshopNo">
+		update SWIPE.WORKSHOP_LINE_STATUS t set t.status = #{Status},t.update_time = #{Update_time},t.Update_userid = #{Update_userid} 
+		where t.workshopno = #{WorkshopNo} 
+		<if test="Lineno!=null">
+			and t.lineno = #{Lineno}
+		</if>
+		<if test="Lineno==null">
+			and t.lineno is null
+		</if>
+	</update>
+	
+	<select id="selectOtherEmpSwipecardCount" parameterType="RepairSwipecard" resultType="int">
+		select count(*) from SWIPE.WORKSHOP_LINE_SWIPECARD t 
+		where t.id = #{Id} and t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.swipe_type = #{SwipeType} and t.emp_privilege_level = #{PrivilegeLevel} 
+		<if test="LineNo!=null">
+			and t.lineno = #{LineNo}
+		</if>
+		<if test="LineNo==null">
+			and t.lineno is null
+		</if>
+	</select>
+	
+	<update id="updateOtherSwipecardOut" parameterType="RepairSwipecard">
+		update  SWIPE.WORKSHOP_LINE_SWIPECARD t set t.swipe_out = #{Swipe_Out} 
+		where t.id = #{Id} and t.workshopno = #{WorkshopNo} and t.swipe_out is null and t.swipe_type = #{SwipeType} and t.emp_privilege_level = #{PrivilegeLevel} 
+		<if test="LineNo!=null">
+			and t.lineno = #{LineNo}
+		</if>
+		<if test="LineNo==null">
+			and t.lineno is null
+		</if>
+	</update>
+	
+	<select id="getUUID" parameterType="RawRecord" resultType="String">
+		select t.recv_id from SWIPE.WORKSHOP_LINE_STATUS t where t.workshopno = #{WorkshopNo} and t.enabled = 'Y'
+		<if test="LineNo!=null">
+			and t.lineno = #{LineNo}
+		</if>
+		<if test="LineNo==null">
+			and t.lineno is null
+		</if>
+	</select>
+	
+	<select id="selectMachineBindingCount" parameterType="String" resultType="int">
+		select count(*) from SWIPE.DEVICE_DEPT_BINDING_ZJ t where t.deviceip = #{deviceip} and t.enabled = 'Y'
+	</select>
+	
+	<select id="selectMachineBinding" parameterType="String" resultType="String">
+		select t.costid from SWIPE.DEVICE_DEPT_BINDING_ZJ t where t.deviceip = #{deviceip} and t.enabled = 'Y'
+	</select>
+	
+	<!-- <select id="selectEmpByLineNoAndWorkshopNoProc" statementType="CALLABLE" parameterType="map" >
 		<![CDATA[{call SWIPE.ON_LINE_EMP(
 	        #{WorkshopNo,mode=IN,jdbcType=VARCHAR},
 	        #{ProdLineCode,mode=IN,jdbcType=VARCHAR},
@@ -400,7 +609,7 @@
     <resultMap  type ="com.swipecard.model.SwipeCardTimeInfos" id="DateResult">
         <result property="EMP_ID" column="EMP_ID"/> 
         <result property="SWIPE_DATE" column="SWIPE_DATE"/> 
-    </resultMap>
+    </resultMap> -->
 </mapper>  
 
 

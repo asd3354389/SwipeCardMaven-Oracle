@@ -9,7 +9,10 @@
 		<typeAlias alias="SwipeCardTimeInfos" type="com.swipecard.model.SwipeCardTimeInfos"/>
 		<typeAlias alias="RCLine" type="com.swipecard.model.RCLine"/>
 		<typeAlias alias="LineNO" type="com.swipecard.model.LineNO"/>
-		<typeAlias alias="RawRecord" type="com.swipecard.model.RawRecord"/>		
+		<typeAlias alias="RawRecord" type="com.swipecard.model.RawRecord"/>
+		<typeAlias alias="RepairWorkshopNo" type="com.swipecard.model.RepairWorkshopNo"/>
+		<typeAlias alias="RepairSwipecard" type="com.swipecard.model.RepairSwipecard"/>	
+		<typeAlias alias="RepairReasons" type="com.swipecard.model.RepairReasons"/>					
 	</typeAliases>
 
 	<environments default="development">

@@ -35,17 +35,21 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
@@ -67,13 +71,18 @@ import com.swipecard.util.FormatDateUtil;
 import com.swipecard.util.FrameShowUtil;
 import com.swipecard.util.GetLocalHostIpAndName;
 import com.swipecard.util.JsonFileUtil;
+import com.swipecard.util.RoundButton;
 import com.swipecard.util.SwipeCardJButton;
+import com.swipecard.util.UUID32;
 import com.swipecard.model.EmpShiftInfos;
 import com.swipecard.model.Employee;
 import com.swipecard.model.LineNO;
 import com.swipecard.model.OnLineEmpTableModel;
 import com.swipecard.model.RCLine;
 import com.swipecard.model.RawRecord;
+import com.swipecard.model.RepairReasons;
+import com.swipecard.model.RepairSwipecard;
+import com.swipecard.model.RepairWorkshopNo;
 import com.swipecard.model.SwingBase;
 import com.swipecard.model.SwipeCardTimeInfos;
 import com.swipecard.model.SwipeCardUserTableModel;
@@ -84,7 +93,7 @@ import com.swipecard.swipeRecordLog.SwipeRecordLogToDB;
 public class SwipeCard extends JFrame {
 
 	private static final long serialVersionUID = 1216479862784043108L;
-	private final static String CurrentVersion="V20190717";
+	private final static String CurrentVersion="V20191009";
 	private static Logger logger = Logger.getLogger(SwipeCard.class);
 	private Vector<Vector<Object>> rowData = new Vector<Vector<Object>>();
 	private JTable table;
@@ -92,18 +101,18 @@ public class SwipeCard extends JFrame {
 	private int ONE_SECOND = 1000;
 
 	static JTabbedPane tabbedPane;
-	static JLabel label1, label3, swipeTimeLable, curTimeLable;
-	static JLabel labelS1, labelS2, labelS3;
-	static JLabel p3WorksNoLabel,p3LinkNoLabel,p3swipeTimeLable, p3curTimeLable,p3swipeLabel,p3tipLable,p1tipLable,p4tipLable;
-	static JPanel panel1, panel2, panel3,panel4;
+	static JLabel label1, label3, swipeTimeLable, curTimeLable,p5workshopNoLabel,p5workshopNoLabelDesc,p5linenoLabel,p5linenoLabelDesc;
+	static JLabel labelS1, labelS2, labelS3,workshopNo6_1,p5swipecardLabel,p5ReasonClass,p5ReasonDesc,p5swipecardClass;
+	static JLabel p3WorksNoLabel,p3LinkNoLabel,p3swipeTimeLable, p3curTimeLable,p3swipeLabel,p3tipLable,p1tipLable,p4tipLable,p5curTimeLable,p5swipeTimeLable;
+	static JPanel panel1, panel2, panel3,panel4,panel5,panel6,panel6_1;
 	static ImageIcon image;
 	static JLabel labelT2_1, labelT2_2, labelT2_3, labelT1_1,workShopNoJlabel, labelT1_3, labelT1_5, labelT1_6, labelT1_4, linenoLabel, labelT1_7;
-	static JComboBox comboBox, comboBox2,p3WorkShopNoComboBox,p3LinkNoComboBox;
-	static SwipeCardJButton butT1_3, butT1_4, butT1_5, butT1_6, butT2_1, butT2_2, butT2_3, butT1_7, butT2_rcno;
-	static JTextArea jtextT1_1, jtextT1_2,p3JTextArea;
-	static TextField textT2_1, textT2_2, textT1_3, textT1_1, textT1_5, textT1_6,p3SwipeText;
+	static JComboBox comboBox, comboBox2,p3WorkShopNoComboBox,p3LinkNoComboBox,p5ReasonClassCombobox,p5ReasonDescCombobox,p5swipecardClassCombobox,p6WorkShopNoComboBox;
+	static SwipeCardJButton butT1_3, butT1_4, butT1_5, butT1_6, butT2_1, butT2_2, butT2_3, butT1_7, butT2_rcno,p5But1_1,p5But1_2;
+	static JTextArea jtextT1_1, jtextT1_2,p3JTextArea,jtextT5_1;
+	static TextField textT2_1, textT2_2, textT1_3, textT1_1, textT1_5, textT1_6,p3SwipeText,p5swipecardText;
 	static JTextField jtf, jtf2;
-	static JScrollPane jspT1_1, jspT2_2, JspTable, myScrollPane,p3jsp,empScrollPane;
+	static JScrollPane jspT1_1, jspT2_2, JspTable, myScrollPane,p3jsp,empScrollPane,jsp6_1,jspT5_1;
 	// static Object[] str1 = getItems();
 	static Object[] str1 = null;
 	private SwipeCardUserTableModel myModel;
@@ -115,11 +124,21 @@ public class SwipeCard extends JFrame {
 	final Object[] WorkshopNoList = getWorkshopNo();
 	final JSONObject LineNoObject = getLineNoObject();
 	Object[] lineno = null;
-
-	 static JsonFileUtil jsonFileUtil = new JsonFileUtil();
-	  static String defaultWorkshopNo = jsonFileUtil.getSaveWorkshopNo();
-	  static  String defaultLineNo = jsonFileUtil.getSaveLineNo();
+	Object[] ReasonClass = null;
+	List<RepairReasons> ReasonDescList = null;
+	Object[] ReasonDesc = null;
 	
+	static GetLocalHostIpAndName getLocalHostIpAndName = new GetLocalHostIpAndName();
+	static String Realip = getLocalHostIpAndName.getLocalHostIP();
+
+	static JsonFileUtil jsonFileUtil = new JsonFileUtil();
+	static String defaultWorkshopNo = jsonFileUtil.getSaveWorkshopNo();
+	static  String defaultLineNo = jsonFileUtil.getSaveLineNo();
+	
+	int RepairCount = 0;
+	Date RepairSwipe = new Date();
+	int RepairSwipeSecond = 3;
+	  
 	static SqlSessionFactory sqlSessionFactory;
 	private static Reader reader;
 	static Properties pps = new Properties();
@@ -161,6 +180,7 @@ public class SwipeCard extends JFrame {
             String time = dateFormatter.format(date);
 			curTimeLable.setText(time);
 			p3curTimeLable.setText(time);
+			p5curTimeLable.setText(time);
 		}
 	}
 	
@@ -187,6 +207,26 @@ public class SwipeCard extends JFrame {
 			panel4.repaint();
 		}
 	}
+	
+	protected class getRepairLineNoStatusTimerTask extends TimerTask {
+		@Override
+		public void run() {			
+			//time = dateFormatter.format(Calendar.getInstance().getTime());
+			String RepairWorkshopNo = p6WorkShopNoComboBox.getSelectedItem().toString();
+			getRepairLineNoStatus(RepairWorkshopNo);
+			if(RepairCount==0){
+				RepairCount++;
+			}else{
+				Object[] RepairWorkshopNoArray = getRepairWorkshopNo();
+				p6WorkShopNoComboBox.removeAllItems();
+				for (Object object : RepairWorkshopNoArray) {
+					p6WorkShopNoComboBox.addItem(object);
+				}
+				p6WorkShopNoComboBox.setSelectedItem(RepairWorkshopNo);
+			}
+		}
+	}
+	
 
 	public SwipeCard(final String WorkshopNo,final String LineNo) {
 
@@ -210,10 +250,24 @@ public class SwipeCard extends JFrame {
 		panel3.setLayout(null);
 		panel4 = new JPanel();
 		panel4.setLayout(null);
+		panel5 = new JPanel();
+		panel5.setLayout(null);
+		panel6 = new JPanel();
+		panel6.setLayout(null);
+		panel6_1 = new JPanel();
+		panel6_1.setLayout(null);
+		panel6_1.setPreferredSize(new Dimension(1000,10000));
 		panel1.setBackground(Color.WHITE);
 		panel2.setBackground(Color.WHITE);
 		panel3.setBackground(Color.WHITE);
 		panel4.setBackground(Color.WHITE);
+		panel5.setBackground(Color.WHITE);
+		panel6.setBackground(Color.WHITE);
+		panel6_1.setBackground(Color.WHITE);
+		jsp6_1 = new JScrollPane(panel6_1);
+		jsp6_1.setBounds(0, 170, 1100, 1000);
+		jsp6_1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		jsp6_1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
 		labelT2_1 = new JLabel("班別：");// 指示單號
 
@@ -419,8 +473,10 @@ public class SwipeCard extends JFrame {
 		// 将标签面板加入到选项卡面板对象上
 		tabbedPane.addTab("上下班刷卡界面", null, panel1, "First panel");
 		tabbedPane.addTab("補充指示單號", null, panel2, "Second panel");
-		tabbedPane.addTab("更換線別刷卡", null, panel3, "third panel");
-		tabbedPane.addTab("當前產線人員", null, panel4, "fourth panel");
+		tabbedPane.addTab("更換線別刷卡", null, panel3, "Third panel");
+		tabbedPane.addTab("當前產線人員", null, panel4, "Fourth panel");
+		tabbedPane.addTab("機台維護刷卡", null, panel5, "Fourth panel");
+		tabbedPane.addTab("機台維護看板", null, panel6, "Fifth panel");
 		tabbedPane.setSelectedIndex(0); // 设置默认选中的
 		// tabbedPane.setEnabledAt(1,false);
 		this.setVisible(true);
@@ -507,6 +563,212 @@ public class SwipeCard extends JFrame {
 		panel4.add(empScrollPane);
 		panel4.add(p4tipLable);
 		
+		//機台維護刷卡
+		p5workshopNoLabel = new JLabel("車間:");
+		p5workshopNoLabel.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5workshopNoLabel.setBounds(x1 + 20, y1, x7, y1);
+		
+		p5workshopNoLabelDesc = new JLabel(WorkshopNo);
+		p5workshopNoLabelDesc.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5workshopNoLabelDesc.setBounds(x1 + x7, 1 * y1, y4 + 100, y1);
+		
+		p5linenoLabel = new JLabel("線號：");
+		p5linenoLabel.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5linenoLabel.setBounds(x1 + 20, 2 * y1, x7, y1);
+		
+		p5linenoLabelDesc = new JLabel("線號");
+		p5linenoLabelDesc.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5linenoLabelDesc.setBounds(x1 + x7, 2 * y1, y4 + 100, y1);
+		
+		if(LineNo == null || LineNo.equals("")){
+			p5linenoLabelDesc.setText("");
+			p5linenoLabel.setVisible(false);
+		}else{
+			p5linenoLabelDesc.setText(LineNo);
+		}
+		
+		p5curTimeLable = new JLabel();
+		p5curTimeLable.setFont(new Font("微软雅黑", Font.BOLD, 35));
+		p5curTimeLable.setBounds(x1 + 10, 3 * y1, 400, 50);
+		
+		p5swipeTimeLable = new JLabel();
+		p5swipeTimeLable.setFont(new Font("微软雅黑", Font.BOLD, 35));
+		p5swipeTimeLable.setBounds(400, y1, x4, y1);
+		
+		p5swipecardLabel = new JLabel("刷卡:");
+		p5swipecardLabel.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5swipecardLabel.setBounds(x1 + 20, 4 * y1 + 20, x7, y1);
+		
+		p5swipecardText = new TextField(15);// 上班
+		p5swipecardText.setFont(new Font("微软雅黑", Font.PLAIN, 25));
+		p5swipecardText.setBounds(x1 + x7, 4 * y1 + 20, y4 + 100, y1);
+		
+		p5ReasonClass = new JLabel("維修類別:");
+		p5ReasonClass.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5ReasonClass.setBounds(x1 + 20, 5 * y1 + 40, x7*2, y1);
+		
+		p5ReasonClassCombobox = new JComboBox();
+		p5ReasonClassCombobox.setFont(new Font("微软雅黑", Font.PLAIN, 25));
+		p5ReasonClassCombobox.setBounds(x1 + x7 + 50, 5 * y1 + 40, y4 + 50, y1);
+		p5ReasonClassCombobox.setEditable(false);
+		
+		ReasonClass = getReasonClass();
+		if (ReasonClass != null) {
+			for (Object object : ReasonClass) {
+				p5ReasonClassCombobox.addItem(object);
+			}
+		} else {
+			p5ReasonClassCombobox.addItem("無維修類別");
+		}
+		
+		p5ReasonDesc = new JLabel("維修原因:");
+		p5ReasonDesc.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5ReasonDesc.setBounds(x1 + 20, 6 * y1 + 60, x7*2, y1);
+		
+		
+		p5ReasonDescCombobox = new JComboBox();// 上班
+		p5ReasonDescCombobox.setFont(new Font("微软雅黑", Font.PLAIN, 25));
+		p5ReasonDescCombobox.setBounds(x1 + x7 + 50, 6 * y1 + 60, y4 + 50, y1);
+		p5ReasonDescCombobox.setEditable(false);
+		
+		ReasonDesc = getReasonDesc(p5ReasonClassCombobox.getSelectedItem().toString());
+		if (ReasonDesc != null) {
+			for (Object object : ReasonDesc) {
+				p5ReasonDescCombobox.addItem(object);
+			}
+		} else {
+			p5ReasonDescCombobox.addItem("無維修原因");
+		}
+		
+		
+		jtextT5_1 = new JTextArea();// 刷卡人員信息,JTextArea(int rows, int columns)
+		jtextT5_1.setBackground(Color.WHITE);
+		jtextT5_1.setEditable(false);
+		jtextT5_1.setLineWrap(true);
+		
+		jspT5_1 = new JScrollPane(jtextT5_1);
+		jspT5_1.setBounds(400, 2 * y1 + 20, x4, 250);
+		
+		p5But1_1 = new SwipeCardJButton("維修完成", 2);
+		p5But1_1.setBounds(x6, 350 + y1, x5, y1);
+		
+		p5But1_2 = new SwipeCardJButton("重新維修", 2);
+		p5But1_2.setBounds(x6 + 160, 350 + y1, x5, y1);
+		
+		String checkRepairStatus = checkRepairStatus(WorkshopNo,LineNo);
+		System.out.println(checkRepairStatus);
+		if(checkRepairStatus.equals("3")){
+			p5But1_1.setEnabled(true);
+			p5But1_2.setEnabled(true);
+			p5swipecardText.setEnabled(false);
+			jtextT5_1.setText("請QC確認維修是否成功！\n------------\n");
+		}else{
+			if(checkRepairStatus.equals("0")){
+				jtextT5_1.setText("當前線別無異常！\n------------\n");
+			}else if(checkRepairStatus.equals("1")){
+				jtextT5_1.setText("當前線別線長已提報故障，待維修人員刷卡維修！\n------------\n");
+			}else if(checkRepairStatus.equals("2")){
+				jtextT5_1.setText("當前線別維修人員正在維修！\n------------\n");
+				List<Employee> repairEmp = getRepairEmp(WorkshopNo,LineNo);
+				if(repairEmp!=null&&repairEmp.size()>0){
+					for(int e1 = 0;e1<repairEmp.size();e1++){
+						jtextT5_1.append(repairEmp.get(e1).getId() + "   " +repairEmp.get(e1).getName()+"\n");
+					}
+				}else{
+					jtextT5_1.append("當前已無人維修"+"\n");
+				}
+			}else if(checkRepairStatus.equals("4")){
+				jtextT5_1.setText("當前線別QC已確認維修完成，待線長刷卡結案！\n------------\n");
+			}else if(checkRepairStatus.equals("5")){
+				jtextT5_1.setText("QC確認任然存在故障，請維修員重新維修！\n------------\n");
+			}else{
+				jtextT5_1.append("當前線別狀態異常！\n------------\n");
+			}
+			p5But1_1.setEnabled(false);
+			p5But1_2.setEnabled(false);
+			p5swipecardText.setEnabled(true);
+		}
+		
+		p5swipecardClass = new JLabel("刷卡類型:");
+		p5swipecardClass.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		p5swipecardClass.setBounds(x1 + 20, 350 + y1, x7*2, y1);
+		
+		p5swipecardClassCombobox = new JComboBox();// 上班
+		p5swipecardClassCombobox.setFont(new Font("微软雅黑", Font.PLAIN, 25));
+		p5swipecardClassCombobox.setBounds(x1 + x7 + 50, 350 + y1, y4 + 50, y1);
+		p5swipecardClassCombobox.setEditable(false);
+		p5swipecardClassCombobox.addItem("線別維護刷卡");
+		p5swipecardClassCombobox.addItem("強制結束刷卡");
+		p5swipecardClassCombobox.addItem("QC巡檢");
+		p5swipecardClassCombobox.addItem("打樣");
+		
+		panel5.add(p5workshopNoLabel);
+		panel5.add(p5workshopNoLabelDesc);
+		panel5.add(p5linenoLabel);
+		panel5.add(p5linenoLabelDesc);
+		panel5.add(p5curTimeLable);
+		panel5.add(p5swipeTimeLable);
+		panel5.add(p5swipecardText);
+		panel5.add(p5swipecardLabel);
+		panel5.add(jspT5_1);
+		panel5.add(p5ReasonClassCombobox);
+		panel5.add(p5ReasonClass);
+		panel5.add(p5ReasonDescCombobox);
+		panel5.add(p5ReasonDesc);
+		panel5.add(p5But1_1);
+		panel5.add(p5But1_2);
+		panel5.add(p5swipecardClassCombobox);
+		panel5.add(p5swipecardClass);
+		
+		
+		//機台維護看板
+		workshopNo6_1 = new JLabel("車間：");
+		workshopNo6_1.setFont(new Font("微软雅黑", Font.BOLD, 25));
+		workshopNo6_1.setBounds(10, 35, 90, 30);
+		
+		p6WorkShopNoComboBox = new JComboBox(getRepairWorkshopNo());
+		p6WorkShopNoComboBox.setSelectedItem(WorkshopNo);
+		p6WorkShopNoComboBox.setFont(new Font("微软雅黑", Font.PLAIN, 18));
+		p6WorkShopNoComboBox.setBounds(100, 35, y4 + 100, y1);
+		
+		for(int s1 = 0;s1<6;s1++){
+			String lineStatus = "";
+			if(s1==0){
+				lineStatus = "正常";
+			}else if(s1==1){
+				lineStatus = "故障";
+			}else if(s1==2){
+				lineStatus = "維修中";
+			}else if(s1==3){
+				lineStatus = "QC確認中";
+			}else if(s1==4){
+				lineStatus = "QC已確認";
+			}else {
+				lineStatus = "無資料";
+			}
+			JButton buttontest1 = new JButton(lineStatus);
+			if(s1==0){
+				buttontest1.setBackground(Color.green);
+			}else if(s1==1){
+				buttontest1.setBackground(Color.red);
+			}else if(s1==2){
+				buttontest1.setBackground(Color.YELLOW);
+			}else if(s1==3){
+				Color col = new Color(187,255,255);
+				buttontest1.setBackground(col);
+			}else if(s1==4){
+				buttontest1.setBackground(Color.PINK);
+			}
+			
+			buttontest1.setFont(new Font("微软雅黑", Font.BOLD, 25));
+			buttontest1.setBounds(s1 * 160 + 10, 100, 150, 50);
+			panel6.add(buttontest1);
+		}
+		
+		panel6.add(workshopNo6_1);
+		panel6.add(p6WorkShopNoComboBox);
+		panel6.add(jsp6_1);
+		
 		if(LineNo == null || LineNo.equals("")){
 			linenoLabel.setText("");
 			labelT1_4.setVisible(false);
@@ -522,6 +784,110 @@ public class SwipeCard extends JFrame {
 		Timer tmr = new Timer();
 		tmr.scheduleAtFixedRate(new JLabelTimerTask(), new Date(), ONE_SECOND);
 		tmr.scheduleAtFixedRate(new EmpTableTimerTask(), new Date(), 1000*60);
+		tmr.scheduleAtFixedRate(new getRepairLineNoStatusTimerTask(), new Date(), 1000*60);
+		
+		p5ReasonClassCombobox.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					ReasonDesc = getReasonDesc(p5ReasonClassCombobox.getSelectedItem().toString());
+					p5ReasonDescCombobox.removeAllItems();
+					if (ReasonDesc != null) {
+						for (Object object : ReasonDesc) {
+							p5ReasonDescCombobox.addItem(object);
+						}
+					} else {
+						p5ReasonDescCombobox.addItem("無維修原因");
+					}
+				}
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						p5swipecardText.requestFocusInWindow();
+					}
+				});
+			}
+		});
+		
+		p5ReasonDescCombobox.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						p5swipecardText.requestFocusInWindow();
+					}
+				});
+			}
+		});
+		
+		p5swipecardClassCombobox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				String swipecardClass = p5swipecardClassCombobox.getSelectedItem().toString();
+				if(swipecardClass.equals("線別維護刷卡")){
+					String checkRepairStatus = checkRepairStatus(WorkshopNo,LineNo);
+					System.out.println(checkRepairStatus);
+					if(checkRepairStatus.equals("3")){
+						p5But1_1.setEnabled(true);
+						p5But1_2.setEnabled(true);
+						p5swipecardText.setEnabled(false);
+						jtextT5_1.setText("請QC確認維修是否成功！\n------------\n");
+					}else{
+						if(checkRepairStatus.equals("0")){
+							jtextT5_1.setText("當前線別無異常！\n------------\n");
+						}else if(checkRepairStatus.equals("1")){
+							jtextT5_1.setText("當前線別線長已提報故障，待維修人員刷卡維修！\n------------\n");
+						}else if(checkRepairStatus.equals("2")){
+							jtextT5_1.setText("當前線別維修人員正在維修！\n------------\n");
+							List<Employee> repairEmp = getRepairEmp(WorkshopNo,LineNo);
+							if(repairEmp!=null&&repairEmp.size()>0){
+								for(int e1 = 0;e1<repairEmp.size();e1++){
+									jtextT5_1.append(repairEmp.get(e1).getId() + "   " +repairEmp.get(e1).getName()+"\n");
+								}
+							}else{
+								jtextT5_1.append("當前已無人維修"+"\n");
+							}
+						}else if(checkRepairStatus.equals("4")){
+							jtextT5_1.setText("當前線別QC已確認維修完成，待線長刷卡結案！\n------------\n");
+						}else if(checkRepairStatus.equals("5")){
+							jtextT5_1.setText("QC確認任然存在故障，請維修員重新維修！\n------------\n");
+						}else{
+							jtextT5_1.setText("當前線別狀態異常！\n------------\n");
+						}
+						p5But1_1.setEnabled(false);
+						p5But1_2.setEnabled(false);
+						p5swipecardText.setEnabled(true);
+					}
+				}else{
+					jtextT5_1.setText(swipecardClass + "刷卡！\n------------\n");
+					p5swipecardText.setEnabled(true);
+				}
+				jtextT5_1.setBackground(Color.WHITE);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						p5swipecardText.requestFocusInWindow();
+					}
+				});
+			}
+		});
+		
+		p6WorkShopNoComboBox.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					String RepairWorkshopNo = p6WorkShopNoComboBox.getSelectedItem().toString();
+					getRepairLineNoStatus(RepairWorkshopNo);
+				}
+			}
+		});
 		
 		p3WorkShopNoComboBox.addItemListener(new ItemListener() {
 
@@ -607,9 +973,125 @@ public class SwipeCard extends JFrame {
 			public void keyPressed(KeyEvent e) {
 			}
 		});
-
+		
+		p5But1_1.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SqlSession session = sqlSessionFactory.openSession();
+				// TODO Auto-generated method stub
+				Date swipeCardTime = FormatDateUtil.getDateTime();
+				SwipeCardService swipeCardService=new SwipeCardService();
+				String repairLino = null;
+				if(LineNo==null||LineNo.equals("")){
+					repairLino = "0";
+				}else{
+					repairLino = LineNo;
+				}
+				String Reason = null;
+				String Status = null;
+				String ReasonDesc = p5ReasonDescCombobox.getSelectedItem().toString();
+				try{
+					RawRecord swipeRecord = new RawRecord();
+					swipeRecord.setSwipeCardTime(swipeCardTime);
+					swipeRecord.setWorkshopNo(WorkshopNo);
+					swipeRecord.setLineNo(repairLino);
+					int isRepairWorkshopNo = session.selectOne("isRepairWorkshopNo", swipeRecord);
+					if(isRepairWorkshopNo==1){
+						String swipeType = "1";
+						String privilegeLevel = "3";
+						Reason = getReasonNo(ReasonDesc);
+						Status = "4";
+						RepairWorkshopNo repairInfo = session.selectOne("getRepairInfo",swipeRecord);
+						swipeCardService.updateSwipecardOut(session,swipeCardTime,repairInfo,Reason,Status,swipeType,privilegeLevel);
+						session.commit();
+						jtextT5_1.setBackground(Color.WHITE);
+						jtextT5_1.setText("QC已確認，待線長刷卡結案！\n------------\n");
+						p5swipecardText.setText("");
+						p5But1_1.setEnabled(false);
+						p5But1_2.setEnabled(false);
+						p5swipecardText.setEnabled(true);
+						p5swipecardText.requestFocusInWindow();
+					}else{
+						jtextT5_1.setBackground(Color.RED);
+						jtextT5_1.setText("該線未添加到車間線別維修列表中！\n------------\n");
+						p5swipecardText.setText("");
+					}
+				} catch (Exception e1) {
+					session.rollback();
+					logger.error("QC確認維修狀態错误，原因：" + e1);
+					dispose();
+					SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+				} finally {
+					ErrorContext.instance().reset();
+					if (session != null) {
+						session.close();
+					}
+				}
+				
+			}
+		});
+		
+		p5But1_2.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SqlSession session = sqlSessionFactory.openSession();
+				// TODO Auto-generated method stub
+				Date swipeCardTime = FormatDateUtil.getDateTime();
+				SwipeCardService swipeCardService=new SwipeCardService();
+				String repairLino = null;
+				String ReasonDesc = p5ReasonDescCombobox.getSelectedItem().toString();
+				if(LineNo==null||LineNo.equals("")){
+					repairLino = "0";
+				}else{
+					repairLino = LineNo;
+				}
+				String Reason = "100010";
+				String Status = null;
+				try{
+					RawRecord swipeRecord = new RawRecord();
+					swipeRecord.setSwipeCardTime(swipeCardTime);
+					swipeRecord.setWorkshopNo(WorkshopNo);
+					swipeRecord.setLineNo(repairLino);
+					int isRepairWorkshopNo = session.selectOne("isRepairWorkshopNo", swipeRecord);
+					if(isRepairWorkshopNo==1){
+						String swipeType = "1";
+						String privilegeLevel = "3";
+						Reason = getReasonNo(ReasonDesc);
+						Status = "5";
+						RepairWorkshopNo repairInfo = session.selectOne("getRepairInfo",swipeRecord);
+						swipeCardService.updateSwipecardOut(session,swipeCardTime,repairInfo,Reason,Status,swipeType,privilegeLevel);
+						session.commit();
+						jtextT5_1.setBackground(Color.RED);
+						jtextT5_1.setText("QC確認任然存在故障，請維修員重新維修！\n------------\n");
+						p5swipecardText.setText("");
+						p5But1_1.setEnabled(false);
+						p5But1_2.setEnabled(false);
+						p5swipecardText.setEnabled(true);
+						p5swipecardText.requestFocusInWindow();
+					}else{
+						jtextT5_1.setBackground(Color.RED);
+						jtextT5_1.setText("該線未添加到車間線別維修列表中！\n------------\n");
+						p5swipecardText.setText("");
+					}
+				} catch (Exception e1) {
+					session.rollback();
+					logger.error("QC確認維修狀態错误，原因：" + e1);
+					dispose();
+					SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+				} finally {
+					ErrorContext.instance().reset();
+					if (session != null) {
+						session.close();
+					}
+				}
+				
+			}
+		});
+		
 		butT1_5.addActionListener(new ActionListener() {
-
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String bt = butT1_5.getText();
@@ -655,6 +1137,8 @@ public class SwipeCard extends JFrame {
 				SqlSession session = sqlSessionFactory.openSession();
 				// TODO Auto-generated method stub
 				String cardID = textT1_6.getText();
+				Date swipeCardTime = FormatDateUtil.getDateTime();
+				String PROD_LINE_CODE = linenoLabel.getText();
 				if (cardID.length() > 10) {
 					jtextT1_1.setBackground(Color.RED);
 					jtextT1_1.setText("卡號輸入有誤，請再次刷卡\n");
@@ -664,24 +1148,35 @@ public class SwipeCard extends JFrame {
 					Pattern r = Pattern.compile(pattern, Pattern.DOTALL);
 					Matcher m = r.matcher(cardID);
 					if (m.matches() == true) {
-						boolean admin = IsAdminByCardID(cardID, session);
-						if (admin) {
+						try{
+							//只要刷卡都將記錄至raw_record table
+							Employee eif = (Employee) session.selectOne("selectUserByCardID", cardID);
+							String Record_Status="13";
+							addRawSwipeRecord(session, eif, cardID, swipeCardTime, WorkshopNo,Record_Status,PROD_LINE_CODE);
+							boolean admin = IsAdminByCardID(cardID, session);
+							if (admin) {
+								dispose();
+								SwipeCardLogin swipeCardLogin = new SwipeCardLogin();
+								textT1_6.setText("");
+							} else {
+								jtextT1_1.setBackground(Color.RED);
+								jtextT1_1.setText("您的卡权限不够\n请刷管理员的卡");
+								textT1_6.setText("");
+							}
+						} catch (Exception e1) {
+							logger.error("判断是否管理员错误，原因：" + e1);
 							dispose();
-							SwipeCardLogin swipeCardLogin = new SwipeCardLogin();
-							textT1_6.setText("");
-						} else {
-							jtextT1_1.setBackground(Color.RED);
-							jtextT1_1.setText("您的卡权限不够\n请刷管理员的卡");
-							textT1_6.setText("");
+							SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+						} finally {
+							ErrorContext.instance().reset();
+							if (session != null) {
+								session.close();
+							}
 						}
 					} else {
 						System.out.println("無輸入內容或輸入錯誤!");
 					}
 				}
-				if (session != null) {
-					session.close();
-				}
-
 			}
 		});
 
@@ -859,11 +1354,11 @@ public class SwipeCard extends JFrame {
 				// 驗證是否為10位整數，是則繼續執行，否則提示
 				if (CardID.length() > 10) {
 					jtextT1_1.setBackground(Color.red);
-					jtextT1_1.setText("卡號輸入有誤，請再次刷卡\n");
+					jtextT1_1.append("卡號輸入有誤，請再次刷卡\n");
 					textT1_3.setText("");
 				} else if(CardID.length()<10){
 					jtextT1_1.setBackground(Color.RED);
-					jtextT1_1.setText("卡號輸入有誤，請再次刷卡\n");
+					jtextT1_1.append("卡號輸入有誤，請再次刷卡\n");
 					textT1_3.setText("");
 				}else {
 					String pattern = "^[0-9]\\d{9}$";
@@ -884,13 +1379,34 @@ public class SwipeCard extends JFrame {
 							RawRecord swipeRecord = new RawRecord();
 							swipeRecord.setCardID(CardID);
 							swipeRecord.setSwipeCardTime(swipeCardTime);
+							List<String> machineBindingCostIdList = new ArrayList<String>();
+							boolean isMachineBinding = false;
+							
+							if (eif != null) {
+								int machineBinding = session.selectOne("selectMachineBindingCount", Realip);
+								System.out.println("machineBinding:"+machineBinding);
+								if(machineBinding>0){
+									machineBindingCostIdList = session.selectList("selectMachineBinding", Realip);
+									if(machineBindingCostIdList.size()>0){
+										for (int i = 0; i < machineBindingCostIdList.size(); i++) {
+											System.out.println("machineBindingCostIdList:"+machineBindingCostIdList.get(i));
+											System.out.println(eif.getCostID()+"---"+machineBindingCostIdList.get(i).equals(eif.getCostID()));
+											if(machineBindingCostIdList.get(i).equals(eif.getCostID())){
+												isMachineBinding = true;
+											}
+										}
+									}
+								}else{
+									isMachineBinding = true;
+								}
+							}
 							
 							if (eif == null) {	
 								swipeRecord.setRecord_Status("1");
 								int lostRows = session.selectOne("selectLoseEmployee", swipeRecord);				
 								if (lostRows > 1) {
 									
-									jtextT1_1.setText("已記錄當前異常刷卡人員，當前刷卡人員不存在，今天不用再次刷卡！\n");
+									jtextT1_1.append("已記錄當前異常刷卡人員，當前刷卡人員不存在，今天不用再次刷卡！\n");
 									jtextT1_1.setBackground(Color.RED);
 									textT1_3.setText("");
 									session.update("updateRawRecordStatus",swipeRecord);
@@ -902,11 +1418,18 @@ public class SwipeCard extends JFrame {
 								 * "當前刷卡人員不存在；可能是新進人員，或是舊卡丟失補辦，人員資料暫時未更新，請線長記錄，協助助理走原有簽核流程！"
 								 * );
 								 */
-								jtextT1_1.setText("當前刷卡人員不存在；可能是新進人員，或是舊卡丟失補辦，人員資料暫時未更新，請線長記錄，協助助理走原有簽核流程！\n");
+								jtextT1_1.append("當前刷卡人員不存在；可能是新進人員，或是舊卡丟失補辦，人員資料暫時未更新，請線長記錄，協助助理走原有簽核流程！\n");
 								jtextT1_1.setBackground(Color.RED);	
 								session.update("updateRawRecordStatus",swipeRecord);
 								session.commit();
 
+							} else if (!isMachineBinding) {
+								jtextT1_1.append("工號：" + eif.getId() + " \n姓名：" + eif.getName() + "\n該卡機只允許"+machineBindingCostIdList+"刷卡！!\n");
+								jtextT1_1.setBackground(Color.RED);
+								swipeRecord.setId(eif.getId());
+								swipeRecord.setRecord_Status("10");
+								session.update("updateRawRecordStatus", swipeRecord);
+								session.commit();
 							} else {
 								String name = eif.getName();
 								String RC_NO = jtf.getText();
@@ -1006,7 +1529,7 @@ public class SwipeCard extends JFrame {
 															if (goWorkSwipeTime.before(afterClassEnd)) {
 																// 刷卡在夜班下班3.5小時之內,記為昨日夜班下刷
 																jtextT1_1.setBackground(Color.WHITE);
-																jtextT1_1.setText(
+																jtextT1_1.append(
 																		"下班刷卡\n" + "ID: " + eif.getId() + "\nName: "
 																				+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
 																				+"\n昨日班別為:"+yesterdayClassDesc
@@ -1176,10 +1699,10 @@ public class SwipeCard extends JFrame {
 									p3JTextArea.setBackground(Color.WHITE);
 								}
 							}catch (Exception e1) {
-								logger.error("刷卡異常,原因:"+e1);
+								logger.error("換線刷卡異常,原因:"+e1);
 								dispose();
 								SwipeCardNoDB d = new SwipeCardNoDB(WorkshopNo);
-								throw ExceptionFactory.wrapException("刷卡異常,原因:" + e1, e1);
+								throw ExceptionFactory.wrapException("換線刷卡異常,原因:" + e1, e1);
 							} finally {
 								ErrorContext.instance().reset();
 								if (session != null) {
@@ -1225,6 +1748,415 @@ public class SwipeCard extends JFrame {
 									p3SwipeText.requestFocusInWindow();
 								}
 							});
+						}else if(i==4){
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									p5swipecardText.requestFocusInWindow();
+								}
+							});
+						}
+					}
+				}
+			}
+		});
+		
+		
+		/**
+		 * 車間維護刷卡
+		 * 
+		 * 
+		 * */
+		p5swipecardText.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				if(e.getKeyChar() == KeyEvent.VK_ENTER){
+					// TODO Auto-generated method stub
+					if(e.getKeyChar() == KeyEvent.VK_ENTER){
+						SqlSession session = sqlSessionFactory.openSession();
+						SwipeCardService swipeCardService=new SwipeCardService();
+						String CardID = p5swipecardText.getText();
+						SwingBase fieldSetting=null;
+						Date swipeCardTime = FormatDateUtil.getDateTime();
+					    String swipeCardTimeStr = FormatDateUtil.changeTimeToStr(swipeCardTime);
+						String repairLino = null;
+						String ReasonNO = null;
+						String status = null;
+						String swipecardClass = p5swipecardClassCombobox.getSelectedItem().toString();
+						String swipeType = null;
+						if(LineNo==null||LineNo.equals("")){
+							repairLino = "0";
+						}else{
+							repairLino = LineNo;
+						}
+						String ReasonDesc = p5ReasonDescCombobox.getSelectedItem().toString();
+						
+						Boolean RepairSwipeInterval = false;
+						Calendar begin=Calendar.getInstance();
+						begin.setTime(RepairSwipe);
+						begin.add(Calendar.SECOND,RepairSwipeSecond);
+						if(swipeCardTime.before(begin.getTime())){
+							RepairSwipeInterval=true;
+						}
+						// 驗證是否為10位整數，是則繼續執行，否則提示
+						if (CardID.length() > 10) {
+							jtextT5_1.setBackground(Color.red);
+							jtextT5_1.append("卡號輸入有誤，請再次刷卡\n");
+							p5swipecardText.setText("");
+						} else if(CardID.length()<10){
+							jtextT5_1.setBackground(Color.RED);
+							jtextT5_1.append("卡號輸入有誤，請再次刷卡\n");
+							p5swipecardText.setText("");
+						}else if(WorkshopNo.equals("--請選擇車間--")){
+							jtextT5_1.setBackground(Color.RED);
+							jtextT5_1.append("請選擇相應的車間\n");
+							p5swipecardText.setText("");
+						}else if(RepairSwipeInterval){
+							jtextT5_1.setBackground(Color.RED);
+							jtextT5_1.append("兩次刷卡間隔需大於"+RepairSwipeSecond+"秒\n");
+							p5swipecardText.setText("");
+						}else {
+							String pattern = "^[0-9]\\d{9}$";
+							Pattern r = Pattern.compile(pattern, Pattern.DOTALL);
+							Matcher m = r.matcher(CardID);
+							if (m.matches() == true) {
+								try {
+									// 通過卡號查詢員工個人信息
+									// 1、判斷是否今天第一次刷卡
+									// System.out.println("getRowsa: " +
+									// rows.getRowsa());
+									p3swipeTimeLable.setText(swipeCardTimeStr);
+
+									Employee eif = (Employee) session.selectOne("selectUserByCardID", CardID);
+									//只要刷卡都將記錄至raw_record table
+									String Record_Status="12";
+									addRawSwipeRecord(session, eif, CardID, swipeCardTime, WorkshopNo,Record_Status,LineNo);
+									RawRecord swipeRecord = new RawRecord();
+									swipeRecord.setCardID(CardID);
+									swipeRecord.setSwipeCardTime(swipeCardTime);
+									swipeRecord.setWorkshopNo(WorkshopNo);
+									if (eif == null) {	
+										swipeRecord.setLineNo(LineNo);
+										swipeRecord.setRecord_Status("12");
+										int lostRows = session.selectOne("selectLoseEmployee", swipeRecord);				
+										if (lostRows > 1) {
+											jtextT5_1.append("已記錄當前異常刷卡人員，當前刷卡人員不存在，今天不用再次刷卡！\n");
+											jtextT5_1.setBackground(Color.RED);
+											session.update("updateRawRecordStatus",swipeRecord);
+											session.commit();
+											return;
+										}
+										/*
+										 * JOptionPane.showMessageDialog(null,
+										 * "當前刷卡人員不存在；可能是新進人員，或是舊卡丟失補辦，人員資料暫時未更新，請線長記錄，協助助理走原有簽核流程！"
+										 * );
+										 */
+										jtextT5_1.append("當前刷卡人員不存在；可能是新進人員，或是舊卡丟失補辦，人員資料暫時未更新，請線長記錄，協助助理走原有簽核流程！\n");
+										jtextT5_1.setBackground(Color.RED);	
+										session.update("updateRawRecordStatus",swipeRecord);
+										session.commit();
+									}else{
+										swipeRecord.setLineNo(repairLino);
+										int isRepairWorkshopNo = session.selectOne("isRepairWorkshopNo", swipeRecord);
+										if(isRepairWorkshopNo==1){
+											RepairWorkshopNo repairInfo = session.selectOne("getRepairInfo",swipeRecord);
+											System.out.println(repairInfo);
+											int privilegeCount = session.selectOne("getPrivilegeCount", eif.getId());
+											if(privilegeCount == 1){
+												String privilegeLevel = session.selectOne("selectPrivilegeLevel", eif.getId());
+												if(privilegeLevel!=null){
+													if(swipecardClass.equals("線別維護刷卡")){
+														swipeType = "1";
+														String UUID = null;
+														//線長刷卡
+														if(privilegeLevel.equals("1")){
+															if(repairInfo.getStatus().equals("0")){
+																UUID = UUID32.GetUUID32();
+																ReasonNO = getReasonNo(ReasonDesc);
+																status = "1";
+																swipeCardService.updateRepairStatus(session,eif,swipeCardTime,repairInfo,status,UUID);
+																swipeCardService.addLineLeaderSwipecardIn(session,eif,swipeCardTime,repairInfo,ReasonNO,UUID,swipeType,privilegeLevel);
+																session.commit();
+																jtextT5_1.setBackground(Color.WHITE);
+																jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																		+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																		+ "\n" + "線長報故障成功！\n------------\n");
+																p5swipecardText.setText("");
+															}else if(repairInfo.getStatus().equals("4")){
+																UUID = repairInfo.getRecv_id();
+																ReasonNO = getReasonNo(ReasonDesc);
+																status = "0";
+																swipeCardService.updateRepairStatus(session,eif,swipeCardTime,repairInfo,status,null);
+																swipeCardService.addLineLeaderSwipecardOut(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+																session.commit();
+																jtextT5_1.setBackground(Color.WHITE);
+																jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																		+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																		+ "\n" + "當前故障結案成功！\n------------\n");
+																p5swipecardText.setText("");
+															}else{
+																if(repairInfo.getStatus().equals("1")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線已提報故障，請找相關人員維修！\n------------\n");
+																}else if(repairInfo.getStatus().equals("5")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "QC確認任然存在故障，請維修員重新維修！\n------------\n");
+																}else if(repairInfo.getStatus().equals("2")){
+																	int noSwipeOutCount = session.selectOne("selectNoSwipeOutCount", repairInfo);
+																	if(noSwipeOutCount>0){
+																		List<Employee> empList = session.selectList("selectNoSwipeOut",repairInfo);
+																		jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																				+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																				+ "\n" + "以下維修人員未刷結束維修刷卡,請先讓以下員工刷結束維修刷卡，再刷QC卡！\n------------\n");
+																		jtextT5_1.setBackground(Color.RED);
+																		p5swipecardText.setText("");
+																	}else{
+																		jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																				+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																				+ "\n" + "當前已無人維修，請QC確認維修是否完成！\n------------\n");
+																	}
+																}else if(repairInfo.getStatus().equals("3")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線QC正在確認是否維修完成！\n------------\n");
+																}else{
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線狀態未知！\n------------\n");
+																}
+																jtextT5_1.setBackground(Color.RED);
+																p5swipecardText.setText("");
+															}
+														}else if(privilegeLevel.equals("2")){
+															//機修刷卡
+															if(repairInfo.getStatus().equals("1")||repairInfo.getStatus().equals("5")){
+																UUID = repairInfo.getRecv_id();
+																ReasonNO = getReasonNo(ReasonDesc);
+																status = "2";
+																swipeCardService.addRepairSwipecardIn(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+																swipeCardService.updateRepairStatus(session,eif,swipeCardTime,repairInfo,status,null);
+																session.commit();
+																jtextT5_1.setBackground(Color.WHITE);
+																jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																		+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																		+ "\n" + "開始修理線別故障！\n------------\n");
+																p5swipecardText.setText("");
+															}else if(repairInfo.getStatus().equals("2")){
+																UUID = repairInfo.getRecv_id();
+																ReasonNO = getReasonNo(ReasonDesc);
+																fieldSetting = swipeCardService.mechanicInOfOut(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+																session.commit();
+																showLabelContent5(fieldSetting);
+															}else{
+																if(repairInfo.getStatus().equals("0")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線未提報故障，請找線長提報故障！\n------------\n");
+																}else if(repairInfo.getStatus().equals("4")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線QC已確認完畢，請找線長刷卡確認改故障結案！\n------------\n");
+																}else if(repairInfo.getStatus().equals("3")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線QC正在確認是否維修完成！\n------------\n");
+																}else{
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線狀態未知！\n------------\n");
+																}
+																jtextT5_1.setBackground(Color.RED);
+																p5swipecardText.setText("");
+															}
+														}else if (privilegeLevel.equals("3")){
+															//QC刷卡
+															if(repairInfo.getStatus().equals("2")){
+																int noSwipeOutCount = session.selectOne("selectNoSwipeOutCount", repairInfo);
+																if(noSwipeOutCount>0){
+																	List<Employee> empList = session.selectList("selectNoSwipeOut",repairInfo);
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "維修人員未刷結束維修刷卡,請先讓員工刷結束維修刷卡，再刷QC卡！\n------------\n");
+																	jtextT5_1.setBackground(Color.RED);
+																	p5swipecardText.setText("");
+																}else{
+																	UUID = repairInfo.getRecv_id();
+																	ReasonNO = getReasonNo(ReasonDesc);
+																	status = "3";
+																	swipeCardService.addRepairSwipecardIn(session,eif,swipeCardTime,repairInfo,ReasonNO,swipeType,privilegeLevel);
+																	swipeCardService.updateRepairStatus(session,eif,swipeCardTime,repairInfo,status,null);
+																	session.commit();
+																	p5But1_1.setEnabled(true);
+																	p5But1_2.setEnabled(true);
+																	p5swipecardText.setEnabled(false);
+																	jtextT5_1.setBackground(Color.WHITE);
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "請QC確認維修是否成功！\n------------\n");
+																	p5swipecardText.setText("");
+																}
+															}else{
+																if(repairInfo.getStatus().equals("0")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線未提報故障，請找線長提報故障！\n------------\n");
+																}else if(repairInfo.getStatus().equals("1")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線已提報故障，請找相關人員維修！\n------------\n");
+																}else if(repairInfo.getStatus().equals("5")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "QC確認任然存在故障，請維修員重新維修！\n------------\n");
+																}else if(repairInfo.getStatus().equals("4")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線QC已確認完畢，請找線長刷卡確認改故障結案！\n------------\n");
+																}else if(repairInfo.getStatus().equals("3")){
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線QC正在確認是否維修完成！\n------------\n");
+																}else{
+																	jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																			+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																			+ "\n" + "當前線狀態未知！\n------------\n");
+																}
+																jtextT5_1.setBackground(Color.RED);
+																p5swipecardText.setText("");
+															}
+														}else{
+															jtextT5_1.setBackground(Color.RED);
+															jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																	+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																	+ "\n" + "該員工職位與線別維修無關！\n------------\n");
+															p5swipecardText.setText("");
+														}
+														RepairWorkshopNo repairEmpInfo = session.selectOne("getRepairInfo",swipeRecord);
+														if(repairEmpInfo.getStatus().endsWith("2")){
+															int noSwipeOutCount = session.selectOne("selectNoSwipeOutCount", repairEmpInfo);
+															if(noSwipeOutCount>0){
+																List<Employee> empList = session.selectList("selectNoSwipeOut",repairEmpInfo);
+																for(int e1 = 0;e1<empList.size();e1++){
+																	jtextT5_1.append(empList.get(e1).getId() + "   " +empList.get(e1).getName()+"\n");
+																}
+															}else{
+																jtextT5_1.append("當前已無人維修"+"\n");
+															}
+														}
+													}else if(swipecardClass.equals("強制結束刷卡")){
+														swipeType = "1";
+														if(privilegeLevel.equals("1")){
+															ReasonNO = getReasonNo(ReasonDesc);
+															status = "0";
+															if(repairInfo.getStatus().equals("0")){
+																jtextT5_1.setBackground(Color.RED);
+																jtextT5_1.setText("強制結束刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																		+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																		+ "\n" + "當前線別處於正常狀態，強制結束刷卡失敗！\n------------\n");
+															}else{
+																swipeCardService.updateSwipecardEnd(session,swipeCardTime,repairInfo,ReasonNO,status,eif);
+																session.commit();
+																jtextT5_1.setBackground(Color.WHITE);
+																jtextT5_1.setText("強制結束刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																		+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																		+ "\n" + "線長強制結束維修成功！\n------------\n");
+																p5swipecardText.setText("");
+																p5But1_1.setEnabled(false);
+																p5But1_2.setEnabled(false);
+																p5swipecardText.setEnabled(true);
+															}
+														}else{
+															jtextT5_1.setBackground(Color.RED);
+															jtextT5_1.setText("強制結束刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																	+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																	+ "\n" + "該員工非線長，若是要強制結束維修請讓線長刷卡，若是維修線別刷卡，請把強制結束刷卡"
+																			+ "改為線別維護刷卡！\n------------\n");
+															p5swipecardText.setText("");
+														}
+													}else if(swipecardClass.equals("QC巡檢")){
+														swipeType = "2";
+														if(privilegeLevel.equals("3")){
+															ReasonNO = getReasonNo(ReasonDesc);
+															status = "0";
+															repairInfo.setRecv_id("");
+															fieldSetting = swipeCardService.otherSwipecardInOfOut(session,eif,swipeCardTime,repairInfo,ReasonNO,swipecardClass,swipeType,privilegeLevel);
+															session.commit();
+															showLabelContent5(fieldSetting);
+															p5swipecardText.setText("");
+														}else{
+															jtextT5_1.setBackground(Color.RED);
+															jtextT5_1.setText("QC巡檢刷卡\n" + "ID: " + eif.getId() + "\nName: "
+																	+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+																	+ "\n" + "該員工未添加QC權限！\n------------\n");
+															p5swipecardText.setText("");
+														}
+													}else if(swipecardClass.equals("打樣")){
+															swipeType = "3";
+															ReasonNO = getReasonNo(ReasonDesc);
+															status = "0";
+															repairInfo.setRecv_id("");
+															fieldSetting = swipeCardService.otherSwipecardInOfOut(session,eif,swipeCardTime,repairInfo,ReasonNO,swipecardClass,swipeType,privilegeLevel);
+															session.commit();
+															showLabelContent5(fieldSetting);
+															p5swipecardText.setText("");
+													}else{
+														jtextT5_1.setBackground(Color.RED);
+														jtextT5_1.setText("刷卡類型未知，請重新啟動程序或者聯繫相關人員！\n------------\n");
+														p5swipecardText.setText("");
+													}
+												}else{
+													jtextT5_1.setBackground(Color.RED);
+													jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+															+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+															+ "\n" + "該員工無權限！\n------------\n");
+													p5swipecardText.setText("");
+												}
+											}else{
+												jtextT5_1.setBackground(Color.RED);
+												jtextT5_1.setText("線別維修刷卡\n" + "ID: " + eif.getId() + "\nName: "
+														+ eif.getName() + "\n刷卡時間： " + swipeCardTimeStr
+														+ "\n" + "該員工無權限！\n------------\n");
+												p5swipecardText.setText("");
+											}
+										}else{
+											jtextT5_1.setBackground(Color.RED);
+											jtextT5_1.setText("該線未添加到車間線別維修列表中！\n------------\n");
+											p5swipecardText.setText("");
+										}
+									}
+								}catch (Exception e1) {
+									e1.printStackTrace();
+									session.rollback();
+									logger.error("車間維護刷卡異常,原因:"+e1);
+									dispose();
+									SwipeCardNoDB d = new SwipeCardNoDB(WorkshopNo);
+									throw ExceptionFactory.wrapException("車間維護刷卡異常,原因:" + e1, e1);
+								} finally {
+									ErrorContext.instance().reset();
+									if (session != null) {
+										session.close();
+									}
+									p5swipecardText.setText("");
+								}
+								p5swipecardText.setText("");
+								RepairSwipe = new Date();
+							}
+							
 						}
 					}
 				}
@@ -1236,9 +2168,15 @@ public class SwipeCard extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
+
 	private void showLabelContent(SwingBase fieldSetting) {
 		jtextT1_1.append(fieldSetting.getFieldContent());
 		jtextT1_1.setBackground(fieldSetting.getFieldColor());
+	}
+	
+	private void showLabelContent5(SwingBase fieldSetting) {
+		jtextT5_1.setText(fieldSetting.getFieldContent());
+		jtextT5_1.setBackground(fieldSetting.getFieldColor());
 	}
 	
 	public String getShiftByClassDesc(String classDesc) {
@@ -1395,6 +2333,11 @@ public class SwipeCard extends JFrame {
 			logger.error("判断是否管理员错误，原因：" + e);
 			dispose();
 			SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+		} finally {
+			ErrorContext.instance().reset();
+			if (session != null) {
+				session.close();
+			}
 		}
 		return false;
 	}
@@ -1434,8 +2377,8 @@ public class SwipeCard extends JFrame {
 	public Object[] getWorkshopNo() {// TODO
 		List<LineNO> workshopNoInfo;
 		Object[] a = null;
+		SqlSession session = sqlSessionFactory.openSession();
 		try {
-			SqlSession session = sqlSessionFactory.openSession();
 			JSONArray workshopNoArray = new JSONArray();
 			workshopNoInfo = session.selectList("selectWorkshopNo");
 			int con = workshopNoInfo.size();
@@ -1461,6 +2404,9 @@ public class SwipeCard extends JFrame {
 			throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
 		} finally {
 			ErrorContext.instance().reset();
+			if (session != null) {
+				session.close();
+			}
 		}
 		return a;
 	}
@@ -1470,8 +2416,8 @@ public class SwipeCard extends JFrame {
 		List<LineNO> LineNo;
 		JSONObject jsonObject = new JSONObject();
 		Map<String, String> map = new HashMap<String, String>();
+		SqlSession session = sqlSessionFactory.openSession();
 		try {
-			SqlSession session = sqlSessionFactory.openSession();
 			LineNo = session.selectList("selectLineNoList");
 			int con = LineNo.size();
 			if (con > 0) {
@@ -1504,6 +2450,9 @@ public class SwipeCard extends JFrame {
 			throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
 		} finally {
 			ErrorContext.instance().reset();
+			if (session != null) {
+				session.close();
+			}
 		}
 		System.out.println(jsonObject);
 		return jsonObject;
@@ -1545,5 +2494,253 @@ public class SwipeCard extends JFrame {
 		}
 		return a;
 	}
-
+	
+	public Object[] getReasonClass() {
+		List<String> ReasonClassList;
+		Object[] a = null;
+		SqlSession session = sqlSessionFactory.openSession();
+		try {
+			ReasonClassList = session.selectList("selectReasonClassList");
+			if(ReasonClassList!=null){
+				int con = ReasonClassList.size();
+				if (con > 0) {
+					a = new Object[con];
+					for (int i = 0; i < con; i++) {
+						a[i] = ReasonClassList.get(i);
+					}
+				} else {
+					a = new Object[1];
+					a[0] = "無維修類別";
+				}
+			}else{
+				a = new Object[1];
+				a[0] = "無維修類別";
+			}
+		} catch (Exception e) {
+			logger.error("取得維修類別,原因" + e);
+			dispose();
+			SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+			throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+		} finally {
+			ErrorContext.instance().reset();
+			if (session != null) {
+				session.close();
+			}
+		}
+		return a;
+	}
+	
+	public Object[] getReasonDesc(String ReasonClass) {
+		Object[] a = null;
+		if(ReasonClass.equals("無維修類別")||ReasonClass==null){
+			a = new Object[1];
+			a[0] = "無維修原因";
+		}else{
+			SqlSession session = sqlSessionFactory.openSession();
+			try {
+				ReasonDescList = session.selectList("selectReasonDescList",ReasonClass);
+				if(ReasonDescList!=null){
+					int con = ReasonDescList.size();
+					if (con > 0) {
+						a = new Object[con];
+						for (int i = 0; i < con; i++) {
+							a[i] = ReasonDescList.get(i).getReason_Desc();
+						}
+					} else {
+						a = new Object[1];
+						a[0] = "無維修原因";
+					}
+				}else{
+					a = new Object[1];
+					a[0] = "無維修原因";
+				}
+			} catch (Exception e) {
+				logger.error("取得維修類別,原因" + e);
+				dispose();
+				SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+				throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+			} finally {
+				ErrorContext.instance().reset();
+				if (session != null) {
+					session.close();
+				}
+			}
+		}
+		return a;
+	}
+	
+	public String getReasonNo(String ReasonDesc) {
+		String ReasonNo = null;
+		if(ReasonDescList!=null){
+			for(int i = 0;i<ReasonDescList.size();i++){
+				if(ReasonDescList.get(i).getReason_Desc().equals(ReasonDesc)){
+					ReasonNo = ReasonDescList.get(i).getReason_No();
+				}
+			}
+		}
+		if(ReasonNo==null){
+			ReasonNo = "999999";
+		}
+		return ReasonNo;
+	}
+	
+	public Object[] getRepairWorkshopNo() {// TODO
+		List<String> workshopNoInfo;
+		Object[] a = null;
+		SqlSession session = sqlSessionFactory.openSession();
+		try {
+			workshopNoInfo = session.selectList("selectRepairWorkshopNo");
+			if(workshopNoInfo!=null){
+				int con = workshopNoInfo.size();
+				if (con > 0) {
+					a = new Object[con + 1];
+					a[0] = "--請選擇車間--";
+					for (int i = 1; i < con + 1; i++) {
+						a[i] = workshopNoInfo.get(i - 1);
+					}
+				} else {
+					a = new Object[1];
+					a[0] = "--無車間--";
+				}
+			}else{
+				a = new Object[1];
+				a[0] = "--無車間--";
+			}
+		} catch (Exception e) {
+			logger.error("取得車間異常,原因" + e);
+			dispose();
+			SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+			throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+		} finally {
+			ErrorContext.instance().reset();
+			if (session != null) {
+				session.close();
+			}
+		}
+		return a;
+	}
+	
+	public void getRepairLineNoStatus(String workshopNo) {// TODO
+		List<RepairWorkshopNo> RepairLineNoStatus;
+		SqlSession session = sqlSessionFactory.openSession();
+		try {
+			panel6_1.removeAll();
+			if(workshopNo.endsWith("--請選擇車間--")||workshopNo.equals("--無車間--")){
+				JButton buttontest1 = new RoundButton("無該車間資料");
+				buttontest1.setFont(new Font("微软雅黑", Font.BOLD, 25));
+				buttontest1.setBounds( 25,  30, 250, 100);
+				panel6_1.add(buttontest1);
+			}else{
+				RepairLineNoStatus = session.selectList("getRepairLineNoStatus",workshopNo);
+				if(RepairLineNoStatus!=null){
+					int con = RepairLineNoStatus.size();
+					if (con > 0) {
+						for(int s1 = 0;s1<RepairLineNoStatus.size();s1++){
+							JButton buttontest1 = new JButton(RepairLineNoStatus.get(s1).getLineno());
+							String RepairStatus = RepairLineNoStatus.get(s1).getStatus();
+							if(RepairStatus.equals("0")){
+								buttontest1.setBackground(Color.green);
+							}else if(RepairStatus.equals("1")||RepairStatus.equals("5")){
+								buttontest1.setBackground(Color.red);
+							}else if(RepairStatus.equals("2")){
+								buttontest1.setBackground(Color.YELLOW);
+							}else if(RepairStatus.equals("3")){
+								Color col = new Color(187,255,255);
+								buttontest1.setBackground(col);
+							}else{
+								buttontest1.setBackground(Color.PINK);
+							}
+							buttontest1.setFont(new Font("微软雅黑", Font.BOLD, 25));
+							int row = (int) (Math.ceil(s1/4));
+							int hang = s1 % 4;
+							buttontest1.setBounds(hang * 260 + 25, row * 110 + 30, 250, 100);
+							panel6_1.add(buttontest1);
+						}
+					}else{
+						JButton buttontest1 = new RoundButton("無該車間資料");
+						buttontest1.setFont(new Font("微软雅黑", Font.BOLD, 25));
+						buttontest1.setBounds( 25,  30, 250, 100);
+						panel6_1.add(buttontest1);
+					}
+				}else{
+					JButton buttontest1 = new RoundButton("無該車間資料");
+					buttontest1.setFont(new Font("微软雅黑", Font.BOLD, 25));
+					buttontest1.setBounds( 25,  30, 250, 100);
+					panel6_1.add(buttontest1);
+				}
+			}
+			panel6_1.updateUI();
+			panel6_1.repaint();
+		} catch (Exception e) {
+			logger.error("取得車間異常,原因" + e);
+			dispose();
+			SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+			throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+		} finally {
+			ErrorContext.instance().reset();
+			if (session != null) {
+				session.close();
+			}
+		}
+	}
+	
+	public String checkRepairStatus(String WorkshopNo,String LineNo){
+		SqlSession session = sqlSessionFactory.openSession();
+		String repairLino = null;
+		String repairStatus = null;
+		if(LineNo==null||LineNo.equals("")){
+			repairLino = "0";
+		}else{
+			repairLino = LineNo;
+		}
+		try {
+			RawRecord swipeRecord = new RawRecord();
+			swipeRecord.setWorkshopNo(WorkshopNo);
+			swipeRecord.setLineNo(repairLino);
+			int isRepairWorkshopNo = session.selectOne("isRepairWorkshopNo", swipeRecord);
+			if(isRepairWorkshopNo==1){
+				RepairWorkshopNo repairInfo = session.selectOne("getRepairInfo",swipeRecord);
+				repairStatus=repairInfo.getStatus();
+			}else{
+				repairStatus = "99";
+				jtextT5_1.setBackground(Color.RED);
+				jtextT5_1.setText("該線未添加到車間線別維修列表中！\n------------\n");
+				p5swipecardText.setText("");
+			}
+		} catch (Exception e) {
+			logger.error("線別維修狀態異常,原因" + e);
+			dispose();
+			SwipeCardNoDB d = new SwipeCardNoDB(defaultWorkshopNo);
+			throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
+		} finally {
+			ErrorContext.instance().reset();
+			if (session != null) {
+				session.close();
+			}
+		}
+		return repairStatus;
+	}
+	
+	public List<Employee> getRepairEmp(String WorkshopNo,String LineNo){
+		SqlSession session = sqlSessionFactory.openSession();
+		RawRecord swipeRecord = new RawRecord();
+		String repairLino = null;
+		if(LineNo==null||LineNo.equals("")){
+			repairLino = "0";
+		}else{
+			repairLino = LineNo;
+		}
+		swipeRecord.setWorkshopNo(WorkshopNo);
+		swipeRecord.setLineNo(repairLino);
+		List<Employee> empList = null;
+		RepairWorkshopNo repairEmpInfo = session.selectOne("getRepairInfo",swipeRecord);
+		if(repairEmpInfo.getStatus().endsWith("2")){
+			int noSwipeOutCount = session.selectOne("selectNoSwipeOutCount", repairEmpInfo);
+			if(noSwipeOutCount>0){
+				empList = session.selectList("selectNoSwipeOut",repairEmpInfo);
+			}
+		}
+		return empList;
+	}
+	
 }
